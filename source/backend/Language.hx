@@ -101,6 +101,9 @@ class Language
 		Lua_helper.add_callback(lua, "getFileTranslation", function(key:String) {
 			return getFileTranslation(key);
 		});
+		Lua_helper.add_callback(lua, "getCurLanguage", function() {
+    		return ClientPrefs.data.language;
+		});
 	}
 	#end
 }

@@ -149,6 +149,8 @@ class Paths
 
 	public static function getPath(file:String, ?type:AssetType = TEXT, ?parentfolder:String, ?modsAllowed:Bool = true):String
 	{
+		var directModPath:String = 'mods/' + file;
+		if (sys.FileSystem.exists(directModPath)) return directModPath;
 		#if MODS_ALLOWED
 		if(modsAllowed)
 		{
@@ -179,13 +181,13 @@ class Paths
 		return 'assets/shared/$file';
 
 	inline static public function txt(key:String, ?folder:String)
-		return getPath('data/$key.txt', TEXT, folder, true);
+		return getPath(Language.getFileTranslation('data/$key') + '.txt', TEXT, folder, true);
 
 	inline static public function xml(key:String, ?folder:String)
-		return getPath('data/$key.xml', TEXT, folder, true);
+		return getPath(Language.getFileTranslation('data/$key') + '.xml', TEXT, folder, true);
 
 	inline static public function json(key:String, ?folder:String)
-		return getPath('data/$key.json', TEXT, folder, true);
+		return getPath(Language.getFileTranslation('data/$key') + '.json', TEXT, folder, true);
 
 	inline static public function shaderFragment(key:String, ?folder:String)
 		return getPath('shaders/$key.frag', TEXT, folder, true);
@@ -226,16 +228,31 @@ class Paths
 		return sound(key + FlxG.random.int(min, max), modsAllowed);
 
 	public static var currentTrackedAssets:Map<String, FlxGraphic> = [];
+	// 이미지 경로 자동 언어 폴더 분기
+	// images/키 → images/언어코드/키 (파일이 존재하면), 없으면 images/키 그대로
+	static public function getLocalizedImagePath(key:String):String
+	{
+		var langCode:String = ClientPrefs.data.language;
+		if (langCode != null && langCode != ClientPrefs.defaultData.language)
+		{
+			var localizedKey:String = 'images/$langCode/$key';
+			if (fileExists(localizedKey + '.png', IMAGE))
+				return localizedKey;
+		}
+		return 'images/$key';
+	}
+
 	static public function image(key:String, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxGraphic
 	{
-		key = Language.getFileTranslation('images/$key') + '.png';
-		var bitmap:BitmapData = null;
-		if (currentTrackedAssets.exists(key))
+		var finalKey:String = getLocalizedImagePath(key) + '.png';
+
+		if (currentTrackedAssets.exists(finalKey))
 		{
-			localTrackedAssets.push(key);
-			return currentTrackedAssets.get(key);
+			localTrackedAssets.push(finalKey);
+			return currentTrackedAssets.get(finalKey);
 		}
-		return cacheBitmap(key, parentFolder, bitmap, allowGPU);
+
+		return cacheBitmap(finalKey, parentFolder, null, allowGPU);
 	}
 
 	public static function cacheBitmap(key:String, ?parentFolder:String = null, ?bitmap:BitmapData, ?allowGPU:Bool = true):FlxGraphic
@@ -282,7 +299,9 @@ class Paths
 
 	inline static public function getTextFromFile(key:String, ?ignoreMods:Bool = false):String
 	{
-		var path:String = getPath(key, TEXT, !ignoreMods);
+		var translatedKey:String = Language.getFileTranslation(key);
+		var path:String = getPath(translatedKey, TEXT, !ignoreMods);
+
 		#if sys
 		return (FileSystem.exists(path)) ? File.getContent(path) : null;
 		#else
@@ -324,7 +343,8 @@ class Paths
 		var useMod = false;
 		var imageLoaded:FlxGraphic = image(key, parentFolder, allowGPU);
 
-		var myXml:Dynamic = getPath('images/$key.xml', TEXT, parentFolder, true);
+		var imgPath:String = getLocalizedImagePath(key);
+		var myXml:Dynamic = getPath('$imgPath.xml', TEXT, parentFolder, true);
 		if(OpenFlAssets.exists(myXml) #if MODS_ALLOWED || (FileSystem.exists(myXml) && (useMod = true)) #end )
 		{
 			#if MODS_ALLOWED
@@ -335,7 +355,7 @@ class Paths
 		}
 		else
 		{
-			var myJson:Dynamic = getPath('images/$key.json', TEXT, parentFolder, true);
+			var myJson:Dynamic = getPath('$imgPath.json', TEXT, parentFolder, true);
 			if(OpenFlAssets.exists(myJson) #if MODS_ALLOWED || (FileSystem.exists(myJson) && (useMod = true)) #end )
 			{
 				#if MODS_ALLOWED
@@ -372,14 +392,24 @@ class Paths
 		if(key.contains('psychic')) trace(key, parentFolder, allowGPU);
 		var imageLoaded:FlxGraphic = image(key, parentFolder, allowGPU);
 		#if MODS_ALLOWED
-		var xmlExists:Bool = false;
+		// 1) 모드 폴더
+		var imgPath:String = getLocalizedImagePath(key);
+		if (imgPath.startsWith('images/')) imgPath = imgPath.substr(7);
 
-		var xml:String = modsXml(key);
-		if(FileSystem.exists(xml)) xmlExists = true;
+		var xml:String = modsXml(imgPath);
+		if(FileSystem.exists(xml))
+			return FlxAtlasFrames.fromSparrow(imageLoaded, File.getContent(xml));
 
-		return FlxAtlasFrames.fromSparrow(imageLoaded, (xmlExists ? File.getContent(xml) : getPath(Language.getFileTranslation('images/$key') + '.xml', TEXT, parentFolder)));
+		// 2) 에셋 폴더
+		var assetXml:String = getPath(getLocalizedImagePath(key) + '.xml', TEXT, parentFolder);
+		if(FileSystem.exists(assetXml))
+			return FlxAtlasFrames.fromSparrow(imageLoaded, File.getContent(assetXml));
+
+		// 3) 없으면 에러 + null 반환 (띄우지 않음)
+		FlxG.log.error('getSparrowAtlas: "$key" XML을 찾을 수 없음');
+		return FlxAtlasFrames.fromSparrow(imageLoaded, null);
 		#else
-		return FlxAtlasFrames.fromSparrow(imageLoaded, getPath(Language.getFileTranslation('images/$key') + '.xml', TEXT, parentFolder));
+		return FlxAtlasFrames.fromSparrow(imageLoaded, getPath(getLocalizedImagePath(key) + '.xml', TEXT, parentFolder));
 		#end
 	}
 
@@ -389,12 +419,15 @@ class Paths
 		#if MODS_ALLOWED
 		var txtExists:Bool = false;
 		
-		var txt:String = modsTxt(key);
+		var imgPath:String = getLocalizedImagePath(key);
+		if (imgPath.startsWith('images/')) imgPath = imgPath.substr(7);
+
+		var txt:String = modsTxt(imgPath);
 		if(FileSystem.exists(txt)) txtExists = true;
 
-		return FlxAtlasFrames.fromSpriteSheetPacker(imageLoaded, (txtExists ? File.getContent(txt) : getPath(Language.getFileTranslation('images/$key') + '.txt', TEXT, parentFolder)));
+		return FlxAtlasFrames.fromSpriteSheetPacker(imageLoaded, (txtExists ? File.getContent(txt) : getPath(getLocalizedImagePath(key) + '.txt', TEXT, parentFolder)));
 		#else
-		return FlxAtlasFrames.fromSpriteSheetPacker(imageLoaded, getPath(Language.getFileTranslation('images/$key') + '.txt', TEXT, parentFolder));
+		return FlxAtlasFrames.fromSpriteSheetPacker(imageLoaded, getPath(getLocalizedImagePath(key) + '.txt', TEXT, parentFolder));
 		#end
 	}
 
@@ -404,20 +437,31 @@ class Paths
 		#if MODS_ALLOWED
 		var jsonExists:Bool = false;
 
-		var json:String = modsImagesJson(key);
+		var imgPath:String = getLocalizedImagePath(key);
+		if (imgPath.startsWith('images/')) imgPath = imgPath.substr(7);
+
+		var json:String = modsImagesJson(imgPath);
 		if(FileSystem.exists(json)) jsonExists = true;
 
-		return FlxAtlasFrames.fromTexturePackerJson(imageLoaded, (jsonExists ? File.getContent(json) : getPath(Language.getFileTranslation('images/$key') + '.json', TEXT, parentFolder)));
+		return FlxAtlasFrames.fromAseprite(imageLoaded, (jsonExists ? File.getContent(json) : getPath(getLocalizedImagePath(key) + '.json', TEXT, parentFolder)));
 		#else
-		return FlxAtlasFrames.fromTexturePackerJson(imageLoaded, getPath(Language.getFileTranslation('images/$key') + '.json', TEXT, parentFolder));
+		return FlxAtlasFrames.fromAseprite(imageLoaded, getPath(getLocalizedImagePath(key) + '.json', TEXT, parentFolder));
 		#end
 	}
 
-	inline static public function formatToSongPath(path:String) {
-		final invalidChars = ~/[~&;:<>#\s]/g;
-		final hideChars = ~/[.,'"%?!]/g;
-
-		return hideChars.replace(invalidChars.replace(path, '-'), '').trim().toLowerCase();
+	inline static public function formatToSongPath(path:String):String {
+    	if (path == null) return '';
+    
+    // 경로에 슬래시(/)가 있으면 폴더 구조를 유지하기 위해 슬래시 기준으로 쪼개서 각각 포맷팅합니다.
+    	if (path.contains('/')) {
+        	var parts:Array<String> = path.split('/');
+        	for (i in 0...parts.length) {
+            	parts[i] = parts[i].toLowerCase().trim().replace(' ', '-');
+        	}
+        	return parts.join('/'); // 슬래시를 다시 붙여서 경로 구분자로 살려둡니다.
+    	}
+    
+    	return path.toLowerCase().trim().replace(' ', '-');
 	}
 
 	public static var currentTrackedSounds:Map<String, Sound> = [];

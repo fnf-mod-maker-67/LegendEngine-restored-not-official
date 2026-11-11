@@ -8,6 +8,7 @@ import states.TitleState;
 
 // Add a variable here and it will get automatically saved
 @:structInit class SaveVariables {
+	public var selectedSongGroup:String = 'bf_songs'; //새로추가
 	public var downScroll:Bool = false;
 	public var middleScroll:Bool = false;
 	public var opponentStrums:Bool = true;
@@ -235,7 +236,7 @@ class ClientPrefs {
 			reloadVolumeKeys();
 		}
 	}
-
+	
 	inline public static function getGameplaySetting(name:String, defaultValue:Dynamic = null, ?customDefaultValue:Bool = false):Dynamic
 	{
 		if(!customDefaultValue) defaultValue = defaultData.gameplaySettings.get(name);

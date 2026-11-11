@@ -5,9 +5,21 @@ import lime.utils.Assets as LimeAssets;
 
 class CoolUtil
 {
+	// 에러 발생 시 가능하면 ErrorSubstate(인게임)로, 안되면 네이티브 알럿으로 표시
+	public static function showError(errorTitle:String, errorMsg:String, isFatal:Bool = false):Void {
+		trace('$errorTitle - $errorMsg');
+		if (flixel.FlxG.state != null) {
+			flixel.FlxG.state.openSubState(new substates.ErrorSubstate('$errorTitle\n$errorMsg', null, null, isFatal));
+		} else {
+			#if windows
+			lime.app.Application.current.window.alert(errorMsg, errorTitle);
+			#end
+		}
+	}
+
 	public static function checkForUpdates(url:String = null):String {
 		if (url == null || url.length == 0)
-			url = "https://raw.githubusercontent.com/ShadowMario/FNF-PsychEngine/main/gitVersion.txt";
+			url = "https://raw.githubusercontent.com/Tubenyan-Official-YT/whatthefuck/main/release.txt";
 		var version:String = states.MainMenuState.psychEngineVersion.trim();
 		if(ClientPrefs.data.checkForUpdates) {
 			trace('checking for updates...');

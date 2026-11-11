@@ -1,7 +1,7 @@
 package backend;
 
 import flixel.FlxState;
-import backend.PsychCamera;
+import backend.LegendCamera;
 
 class MusicBeatState extends FlxState
 {
@@ -20,6 +20,9 @@ class MusicBeatState extends FlxState
 	}
 
 	var _psychCameraInitialized:Bool = false;
+
+	/** true면 initPsychCamera()에서 위/아래에 오버레이 막대(GlobalOverlay)가 덮어씌워짐. 타이틀/플레이스테이트/에디터류에서 false로 끔 */
+	public var cropOverlay:Bool = true;
 
 	public var variables:Map<String, Dynamic> = new Map<String, Dynamic>();
 	public static function getVariables()
@@ -40,12 +43,17 @@ class MusicBeatState extends FlxState
 		timePassedOnState = 0;
 	}
 
-	public function initPsychCamera():PsychCamera
+	public function initPsychCamera():LegendCamera
 	{
-		var camera = new PsychCamera();
+		var camera = new LegendCamera();
 		FlxG.cameras.reset(camera);
 		FlxG.cameras.setDefaultDrawTarget(camera, true);
 		_psychCameraInitialized = true;
+
+		if (cropOverlay)
+		{
+			FlxG.cameras.add(new objects.GlobalOverlay(), false); // 맨 위에 그려지도록 마지막에 추가
+		}
 		//trace('initialized psych camera ' + Sys.cpuTime());
 		return camera;
 	}
