@@ -91,6 +91,15 @@ class Main extends Sprite
 		Mods.loadTopMod();
 
 		FlxG.save.bind('funkin', CoolUtil.getSavePath());
+
+		var rawData:backend.ClientPrefs.SaveVariables = {}; 
+		for (key in Reflect.fields(rawData)) {
+			if (!Reflect.hasField(FlxG.save.data, key)) {
+				Reflect.setField(FlxG.save.data, key, Reflect.field(rawData, key));
+			}
+		}
+		FlxG.save.flush();
+		
 		Highscore.load();
 
 		#if HSCRIPT_ALLOWED

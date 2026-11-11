@@ -44,7 +44,7 @@ import states.LoadingState;
 
 #if flxanimate
 import flxanimate.*;
-import flxanimate.PsychFlxAnimate as FlxAnimate;
+import flxanimate.LegendFlxAnimate as FlxAnimate;
 #end
 
 //Flixel
