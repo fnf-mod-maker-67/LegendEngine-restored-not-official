@@ -19,7 +19,7 @@ class CoolUtil
 
 	public static function checkForUpdates(url:String = null):String {
 		if (url == null || url.length == 0)
-			url = "https://raw.githubusercontent.com/Tubenyan-Official-YT/whatthefuck/main/release.txt";
+			url = "https://raw.githubusercontent.com/fnf-mod-maker-67/LegendEngine-restored-not-official/main/release.txt";
 		var version:String = states.MainMenuState.psychEngineVersion.trim();
 		if(ClientPrefs.data.checkForUpdates) {
 			trace('checking for updates...');
