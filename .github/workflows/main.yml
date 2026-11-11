@@ -82,14 +82,15 @@ jobs:
       - name: Checkout Target Release Repository
         uses: actions/checkout@v4
         with:
-          repository: 'fnf-mod-maker-67/fnf-battle-cats-legend-begins/fnf-battle-cats-legend-begins'
+          repository: 'fnf-mod-maker-67/fnf-battle-cats-legend-begins'
           token: ${{ secrets.FNF_TOKEN }}
           path: ./target_repo
 
       # 3. 배달할 파일 딱 하나만 복사합니다.
       - name: Copy Specific File Only
         run: |
-          cp ./extracted_files/battleCatsLegendBegins.exe ./target_repo/
+          mkdir -p ./target_repo/fnf-battle-cats-legend-begins
+          cp ./extracted_files/battleCatsLegendBegins.exe ./target_repo/fnf-battle-cats-legend-begins/
 
       # 4. 대상 리포지토리에 푸시하여 배달을 완료합니다.
       - name: Push File to Target Repo
