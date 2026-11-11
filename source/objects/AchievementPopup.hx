@@ -2,106 +2,53 @@ package objects;
 
 #if ACHIEVEMENTS_ALLOWED
 import openfl.events.Event;
-import openfl.geom.Matrix;
-import flash.display.BitmapData;
+import flash.display.Bitmap;
 import openfl.Lib;
 
 class AchievementPopup extends openfl.display.Sprite {
 	public var onFinish:Void->Void = null;
-	var alphaTween:FlxTween;
 	var lastScale:Float = 1;
+	var bitmap:Bitmap;
+	var imgWidth:Float = 0;
+	var imgHeight:Float = 0;
+
 	public function new(achieve:String, onFinish:Void->Void)
 	{
 		super();
 
-		// bg
-		graphics.beginFill(FlxColor.BLACK);
-		graphics.drawRoundRect(0, 0, 420, 130, 16, 16);
-
-		// achievement icon
-		var graphic = null;
-		var hasAntialias:Bool = ClientPrefs.data.antialiasing;
-		var image:String = 'achievements/$achieve';
-		
-		var achievement:Achievement = null;
-		if(Achievements.exists(achieve)) achievement = Achievements.get(achieve);
-
-		#if MODS_ALLOWED
-		var lastMod = Mods.currentModDirectory;
-		if(achievement != null) Mods.currentModDirectory = achievement.mod != null ? achievement.mod : '';
-		#end
-
-		if(Paths.fileExists('images/$image-pixel.png', IMAGE))
-		{
-			graphic = Paths.image('$image-pixel', false);
-			hasAntialias = false;
-		}
-		else graphic = Paths.image(image, false);
-
-		#if MODS_ALLOWED
-		Mods.currentModDirectory = lastMod;
-		#end
-
+		// 커스텀 이미지 로드 (파일명: mission_clear.png)
+		var graphic = Paths.image('mission_clear', false);
 		if(graphic == null) graphic = Paths.image('unknownMod', false);
 
-		var sizeX = 100;
-		var sizeY = 100;
+		bitmap = new Bitmap(graphic.bitmap);
+		bitmap.smoothing = ClientPrefs.data.antialiasing;
+		addChild(bitmap);
 
-		var imgX = 15;
-		var imgY = 15;
-		var image = graphic.bitmap;
-		graphics.beginBitmapFill(image, new Matrix(sizeX / image.width, 0, 0, sizeY / image.height, imgX, imgY), false, hasAntialias);
-		graphics.drawRect(imgX, imgY, sizeX + 10, sizeY + 10);
+		imgWidth = graphic.bitmap.width;
+		imgHeight = graphic.bitmap.height;
 
-		// achievement name/description
-		var name:String = 'Unknown';
-		var desc:String = 'Description not found';
-		if(achievement != null)
-		{
-			if(achievement.name != null) name = Language.getPhrase('achievement_$achieve', achievement.name);
-			if(achievement.description != null)  desc = Language.getPhrase('description_$achieve', achievement.description);
-		}
-
-		var textX = sizeX + imgX + 15;
-		var textY = imgY + 20;
-
-		var text:FlxText = new FlxText(0, 0, 270, 'TEST!!!', 16);
-		text.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT);
-		drawTextAt(text, name, textX, textY);
-		drawTextAt(text, desc, textX, textY + 30);
-		graphics.endFill();
-
-		text.graphic.bitmap.dispose();
-		text.graphic.bitmap.disposeImage();
-		text.destroy();
-
-		// other stuff
+		// 이벤트 리스너 등록
 		FlxG.stage.addEventListener(Event.RESIZE, onResize);
 		addEventListener(Event.ENTER_FRAME, update);
 
-		FlxG.game.addChild(this); //Don't add it below mouse, or it will disappear once the game changes states
+		FlxG.game.addChild(this);
 
-		// fix scale
+		// 해상도 비율 및 위치 계산
 		lastScale = (FlxG.stage.stageHeight / FlxG.height);
-		this.x = 20 * lastScale;
-		this.y = -130 * lastScale;
+		
+		// X축: 화면 가로 중앙 정렬
+		this.x = ((FlxG.width - imgWidth) / 2) * lastScale;
+		
+		// Y축: 화면 상단 바깥쪽 영역에서 대기
+		this.y = -imgHeight * lastScale;
+		
 		this.scaleX = lastScale;
 		this.scaleY = lastScale;
-		intendedY = 20;
+		
+		// 화면 상단 끝에서 머무를 Y 좌표 위치 (여백 10px)
+		intendedY = 10; 
 	}
 
-	var bitmaps:Array<BitmapData> = [];
-	function drawTextAt(text:FlxText, str:String, textX:Float, textY:Float)
-	{
-		text.text = str;
-		text.updateHitbox();
-
-		var clonedBitmap:BitmapData = text.graphic.bitmap.clone();
-		bitmaps.push(clonedBitmap);
-		graphics.beginBitmapFill(clonedBitmap, new Matrix(1, 0, 0, 1, textX, textY), false, false);
-		graphics.drawRect(textX, textY, text.width + textX, text.height + textY);
-	}
-	
 	var lerpTime:Float = 0;
 	var countedTime:Float = 0;
 	var timePassed:Float = -1;
@@ -118,20 +65,21 @@ class AchievementPopup extends openfl.display.Sprite {
 		var time = Lib.getTimer();
 		var elapsed:Float = (time - timePassed) / 1000;
 		timePassed = time;
-		//trace('update called! $elapsed');
 
-		if(elapsed >= 0.5) return; //most likely passed through a loading
+		if(elapsed >= 0.5) return;
 
 		countedTime += elapsed;
 		if(countedTime < 3)
 		{
 			lerpTime = Math.min(1, lerpTime + elapsed);
-			y = ((FlxEase.elasticOut(lerpTime) * (intendedY + 130)) - 130) * lastScale;
+			// 이미지 높이에 맞춰 위에서 아래로 내려오는 애니메이션
+			y = ((FlxEase.elasticOut(lerpTime) * (intendedY + imgHeight)) - imgHeight) * lastScale;
 		}
 		else
 		{
+			// 화면 위로 다시 올라가며 퇴장
 			y -= FlxG.height * 2 * elapsed * lastScale;
-			if(y <= -130 * lastScale)
+			if(y <= -imgHeight * lastScale)
 				destroy();
 		}
 	}
@@ -142,7 +90,8 @@ class AchievementPopup extends openfl.display.Sprite {
 		scaleX = mult;
 		scaleY = mult;
 
-		x = (mult / lastScale) * x;
+		// 해상도가 변경되어도 가로 중앙 유지
+		x = ((FlxG.width - imgWidth) / 2) * mult;
 		y = (mult / lastScale) * y;
 		lastScale = mult;
 	}
@@ -150,7 +99,6 @@ class AchievementPopup extends openfl.display.Sprite {
 	public function destroy()
 	{
 		Achievements._popups.remove(this);
-		//trace('destroyed achievement, new count: ' + Achievements._popups.length);
 
 		if (FlxG.game.contains(this))
 		{
@@ -158,20 +106,11 @@ class AchievementPopup extends openfl.display.Sprite {
 		}
 		FlxG.stage.removeEventListener(Event.RESIZE, onResize);
 		removeEventListener(Event.ENTER_FRAME, update);
-		deleteClonedBitmaps();
-	}
-
-	function deleteClonedBitmaps()
-	{
-		for (clonedBitmap in bitmaps)
-		{
-			if(clonedBitmap != null)
-			{
-				clonedBitmap.dispose();
-				clonedBitmap.disposeImage();
-			}
+		
+		if (bitmap != null) {
+			removeChild(bitmap);
+			bitmap = null;
 		}
-		bitmaps = null;
 	}
 }
 #end

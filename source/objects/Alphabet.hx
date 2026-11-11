@@ -2,6 +2,14 @@ package objects;
 
 import haxe.Json;
 import openfl.utils.Assets;
+import flixel.group.FlxSpriteGroup;
+import flixel.text.FlxText;
+import flixel.util.FlxColor;
+import flixel.math.FlxMath;
+import flixel.math.FlxPoint;
+import flixel.FlxG;
+
+using StringTools;
 
 enum Alignment
 {
@@ -15,7 +23,7 @@ class Alphabet extends FlxSpriteGroup
 	public var text(default, set):String;
 
 	public var bold:Bool = false;
-	public var letters:Array<AlphaCharacter> = [];
+	public var letters:Array<Dynamic> = []; // 외부 호환성을 위해 빈 배열 유지
 
 	public var isMenuItem:Bool = false;
 	public var targetY:Int = 0;
@@ -28,7 +36,9 @@ class Alphabet extends FlxSpriteGroup
 	public var rows:Int = 0;
 
 	public var distancePerItem:FlxPoint = new FlxPoint(20, 120);
-	public var startPosition:FlxPoint = new FlxPoint(0, 0); //for the calculations
+	public var startPosition:FlxPoint = new FlxPoint(0, 0);
+
+	private var nativeText:FlxText = null;
 
 	public function new(x:Float, y:Float, text:String = "", ?bold:Bool = true)
 	{
@@ -38,6 +48,27 @@ class Alphabet extends FlxSpriteGroup
 		this.startPosition.y = y;
 		this.bold = bold;
 		this.text = text;
+	}
+
+	// 외부에서 호출되는 그룹 전체 크기 제어 함수 구현
+	public function setScale(newX:Float, newY:Null<Float> = null)
+	{
+		if(newY == null) newY = newX;
+		scaleX = newX;
+		scaleY = newY;
+		scale.set(newX, newY);
+	}
+
+	// [컴파일 에러 해결] CreditsState 등에서 호출되는 정렬 함수 구현
+	public function snapToPosition()
+	{
+		if (isMenuItem)
+		{
+			if(changeX)
+				x = (targetY * distancePerItem.x) + startPosition.x;
+			if(changeY)
+				y = (targetY * 1.3 * distancePerItem.y) + startPosition.y;
+		}
 	}
 
 	public function setAlignmentFromString(align:String)
@@ -62,104 +93,67 @@ class Alphabet extends FlxSpriteGroup
 
 	private function updateAlignment()
 	{
-		for (letter in letters)
+		if (nativeText == null) return;
+
+		switch(alignment)
 		{
-			var newOffset:Float = 0;
-			switch(alignment)
-			{
-				case CENTERED:
-					newOffset = letter.rowWidth / 2;
-				case RIGHT:
-					newOffset = letter.rowWidth;
-				default:
-					newOffset = 0;
-			}
-	
-			letter.offset.x -= letter.alignOffset;
-			letter.alignOffset = newOffset * scale.x;
-			letter.offset.x += letter.alignOffset;
+			case CENTERED:
+				nativeText.x = -nativeText.width / 2;
+			case RIGHT:
+				nativeText.x = -nativeText.width;
+			default:
+				nativeText.x = 0;
 		}
 	}
 
 	private function set_text(newText:String)
 	{
 		newText = newText.replace('\\n', '\n');
-		clearLetters();
-		createLetters(newText);
-		updateAlignment();
-		this.text = newText;
-		return newText;
-	}
-
-	public function clearLetters()
-	{
-		var i:Int = letters.length;
-		while (i > 0)
-		{
-			--i;
-			var letter:AlphaCharacter = letters[i];
-			if(letter != null)
-			{
-				letter.kill();
-				letters.remove(letter);
-				remove(letter);
-			}
+		text = newText;
+		
+		if (nativeText != null) {
+			remove(nativeText);
+			nativeText.destroy();
+			nativeText = null;
 		}
-		letters = [];
-		rows = 0;
-	}
 
-	public function setScale(newX:Float, newY:Null<Float> = null)
-	{
-		var lastX:Float = scale.x;
-		var lastY:Float = scale.y;
-		if(newY == null) newY = newX;
-		@:bypassAccessor
-			scaleX = newX;
-		@:bypassAccessor
-			scaleY = newY;
+		if (text.length == 0) return newText;
 
-		scale.x = newX;
-		scale.y = newY;
-		softReloadLetters(newX / lastX, newY / lastY);
+		nativeText = new FlxText(0, 0, 0, text);
+		
+		// shared/fonts/font.ttf 경로의 통합 폰트를 자동으로 적용합니다.
+		var fontName:String = Paths.font("font.ttf");
+		var fontSize:Int = bold ? 56 : 36;
+		
+		nativeText.setFormat(fontName, fontSize, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		nativeText.borderSize = bold ? 5 : 3;
+		
+		try {
+			nativeText.antialiasing = ClientPrefs.data.antialiasing;
+		} catch(e:Dynamic) {
+			nativeText.antialiasing = true;
+		}
+		
+		add(nativeText);
+		updateAlignment();
+
+		rows = text.split('\n').length;
+
+		return newText;
 	}
 
 	private function set_scaleX(value:Float)
 	{
-		if (value == scaleX) return value;
-
-		var ratio:Float = value / scale.x;
-		scale.x = value;
 		scaleX = value;
-		softReloadLetters(ratio, 1);
+		scale.x = value;
 		return value;
 	}
 
 	private function set_scaleY(value:Float)
 	{
-		if (value == scaleY) return value;
-
-		var ratio:Float = value / scale.y;
-		scale.y = value;
 		scaleY = value;
-		softReloadLetters(1, ratio);
+		scale.y = value;
 		return value;
-	}
-
-	public function softReloadLetters(ratioX:Float = 1, ratioY:Null<Float> = null)
-	{
-		if(ratioY == null) ratioY = ratioX;
-
-		for (letter in letters)
-		{
-			if(letter != null)
-			{
-				letter.setupAlphaCharacter(
-					(letter.x - x) * ratioX + x,
-					(letter.y - y) * ratioY + y
-				);
-			}
-		}
 	}
 
 	override function update(elapsed:Float)
@@ -174,304 +168,20 @@ class Alphabet extends FlxSpriteGroup
 		}
 		super.update(elapsed);
 	}
-
-	public function snapToPosition()
-	{
-		if (isMenuItem)
-		{
-			if(changeX)
-				x = (targetY * distancePerItem.x) + startPosition.x;
-			if(changeY)
-				y = (targetY * 1.3 * distancePerItem.y) + startPosition.y;
-		}
-	}
-
-	private static var Y_PER_ROW:Float = 85;
-
-	private function createLetters(newText:String)
-	{
-		var consecutiveSpaces:Int = 0;
-
-		var xPos:Float = 0;
-		var rowData:Array<Float> = [];
-		rows = 0;
-		for (i in 0...newText.length)
-		{
-			var character:String = newText.charAt(i);
-			if(character != '\n')
-			{
-				var spaceChar:Bool = (character == " " || (bold && character == "_"));
-				if (spaceChar) consecutiveSpaces++;
-
-				var isAlphabet:Bool = AlphaCharacter.isTypeAlphabet(character.toLowerCase());
-				if (AlphaCharacter.allLetters.exists(character.toLowerCase()) && (!bold || !spaceChar))
-				{
-					if (consecutiveSpaces > 0)
-					{
-						xPos += 28 * consecutiveSpaces * scaleX;
-						rowData[rows] = xPos;
-						if(!bold && xPos >= FlxG.width * 0.65)
-						{
-							xPos = 0;
-							rows++;
-						}
-					}
-					consecutiveSpaces = 0;
-
-					var letter:AlphaCharacter = cast recycle(AlphaCharacter, true);
-					letter.scale.x = scaleX;
-					letter.scale.y = scaleY;
-					letter.rowWidth = 0;
-
-					letter.setupAlphaCharacter(xPos, rows * Y_PER_ROW * scale.y, character, bold);
-					@:privateAccess letter.parent = this;
-
-					letter.row = rows;
-					var off:Float = 0;
-					if(!bold) off = 2;
-					xPos += letter.width + (letter.letterOffset[0] + off) * scale.x;
-					rowData[rows] = xPos;
-
-					add(letter);
-					letters.push(letter);
-				}
-			}
-			else
-			{
-				xPos = 0;
-				rows++;
-			}
-		}
-
-		for (letter in letters)
-		{
-			letter.rowWidth = rowData[letter.row] / scale.x;
-		}
-
-		if(letters.length > 0) rows++;
-	}
 }
 
-
-///////////////////////////////////////////
-// ALPHABET LETTERS, SYMBOLS AND NUMBERS //
-///////////////////////////////////////////
-
-/*enum LetterType
+// [컴파일 에러 해결] Language.hx 등 외부 파일들의 참조 파괴를 막기 위한 상속 구조 및 static 함수 더미 유지
+class AlphaCharacter extends flixel.FlxSprite
 {
-	ALPHABET;
-	NUMBER_OR_SYMBOL;
-}*/
-
-typedef Letter = {
-	?anim:Null<String>,
-	?offsets:Array<Float>,
-	?offsetsBold:Array<Float>
-}
-
-class AlphaCharacter extends FlxSprite
-{
-	//public static var alphabet:String = "abcdefghijklmnopqrstuvwxyz";
-	//public static var numbers:String = "1234567890";
-	//public static var symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?";
-
-	public var image(default, set):String;
-
-	public static var allLetters:Map<String, Null<Letter>>;
-
+	public static var allLetters:Map<String, Dynamic> = new Map<String, Dynamic>();
+	
 	public static function loadAlphabetData(request:String = 'alphabet')
 	{
-		var path:String = Paths.getPath('images/$request.json');
-		#if MODS_ALLOWED
-		if(!FileSystem.exists(path))
-		#else
-		if(!Assets.exists(path, TEXT))
-		#end
-			path = Paths.getPath('images/alphabet.json');
-
-		allLetters = new Map<String, Null<Letter>>();
-		try
-		{
-			#if MODS_ALLOWED
-			var data:Dynamic = Json.parse(File.getContent(path));
-			#else
-			var data:Dynamic = Json.parse(Assets.getText(path));
-			#end
-
-			if(data.allowed != null && data.allowed.length > 0)
-			{
-				for (i in 0...data.allowed.length)
-				{
-					var char:String = data.allowed.charAt(i);
-					if(char == ' ') continue;
-					
-					allLetters.set(char.toLowerCase(), null); //Allows character to be used in Alphabet
-				}
-			}
-
-			if(data.characters != null)
-			{
-				for (char in Reflect.fields(data.characters))
-				{
-					var letterData = Reflect.field(data.characters, char);
-					var character:String = char.toLowerCase().substr(0, 1);
-					if((letterData.animation != null || letterData.normal != null || letterData.bold != null) && allLetters.exists(character))
-						allLetters.set(character, {anim: letterData.animation, offsets: letterData.normal, offsetsBold: letterData.bold});
-				}
-			}
-			trace('Reloaded letters successfully ($path)!');
-		}
-		catch(e:Dynamic)
-		{
-			FlxG.log.error('Error on loading alphabet data: $e');
-			trace('Error on loading alphabet data: $e');
-		}
-
-		if(!allLetters.exists('?'))
-			allLetters.set('?', {anim: 'question'});
+		// FlxText 시스템을 사용하므로 내부 데이터를 로드할 필요가 없어 더미로 비워둡니다.
 	}
 
-	var parent:Alphabet;
-	public var alignOffset:Float = 0; //Don't change this
-	public var letterOffset:Array<Float> = [0, 0];
-
-	public var row:Int = 0;
-	public var rowWidth:Float = 0;
-	public var character:String = '?';
-	public function new()
+	public static function isTypeAlphabet(c:String):Bool
 	{
-		super(x, y);
-		image = 'alphabet';
-		antialiasing = ClientPrefs.data.antialiasing;
-	}
-	
-	public var curLetter:Letter = null;
-	public function setupAlphaCharacter(x:Float, y:Float, ?character:String = null, ?bold:Null<Bool> = null)
-	{
-		this.x = x;
-		this.y = y;
-
-		if(parent != null)
-		{
-			if(bold == null)
-				bold = parent.bold;
-			this.scale.x = parent.scaleX;
-			this.scale.y = parent.scaleY;
-		}
-		
-		if(character != null)
-		{
-			this.character = character;
-			curLetter = null;
-			var lowercase:String = this.character.toLowerCase();
-			if(allLetters.exists(lowercase)) curLetter = allLetters.get(lowercase);
-			else curLetter = allLetters.get('?');
-
-			var postfix:String = '';
-			if(!bold)
-			{
-				if(isTypeAlphabet(lowercase))
-				{
-					if(lowercase != this.character)
-						postfix = ' uppercase';
-					else
-						postfix = ' lowercase';
-				}
-				else postfix = ' normal';
-			}
-			else postfix = ' bold';
-
-			var alphaAnim:String = lowercase;
-			if(curLetter != null && curLetter.anim != null) alphaAnim = curLetter.anim;
-
-			var anim:String = alphaAnim + postfix;
-			animation.addByPrefix(anim, anim, 24);
-			animation.play(anim, true);
-			if(animation.curAnim == null)
-			{
-				if(postfix != ' bold') postfix = ' normal';
-				anim = 'question' + postfix;
-				animation.addByPrefix(anim, anim, 24);
-				animation.play(anim, true);
-			}
-		}
-		updateHitbox();
-	}
-
-	public static function isTypeAlphabet(c:String) // thanks kade
-	{
-		var ascii = StringTools.fastCodeAt(c, 0);
-		return (ascii >= 65 && ascii <= 90)
-			|| (ascii >= 97 && ascii <= 122)
-			|| (ascii >= 192 && ascii <= 214)
-			|| (ascii >= 216 && ascii <= 246)
-			|| (ascii >= 248 && ascii <= 255);
-	}
-
-	private function set_image(name:String)
-	{
-		if(frames == null) //first setup
-		{
-			image = name;
-			frames = Paths.getSparrowAtlas(name);
-			return name;
-		}
-
-		var lastAnim:String = null;
-		if (animation != null)
-		{
-			lastAnim = animation.name;
-		}
-		image = name;
-		frames = Paths.getSparrowAtlas(name);
-		this.scale.x = parent.scaleX;
-		this.scale.y = parent.scaleY;
-		alignOffset = 0;
-		
-		if (lastAnim != null)
-		{
-			animation.addByPrefix(lastAnim, lastAnim, 24);
-			animation.play(lastAnim, true);
-			
-			updateHitbox();
-		}
-		return name;
-	}
-
-	public function updateLetterOffset()
-	{
-		if (animation.curAnim == null)
-		{
-			trace(character);
-			return;
-		}
-
-		var add:Float = 110;
-		if(animation.curAnim.name.endsWith('bold'))
-		{
-			if(curLetter != null && curLetter.offsetsBold != null)
-			{
-				letterOffset[0] = curLetter.offsetsBold[0];
-				letterOffset[1] = curLetter.offsetsBold[1];
-			}
-			add = 70;
-		}
-		else
-		{
-			if(curLetter != null && curLetter.offsets != null)
-			{
-				letterOffset[0] = curLetter.offsets[0];
-				letterOffset[1] = curLetter.offsets[1];
-			}
-		}
-		add *= scale.y;
-		offset.x += letterOffset[0] * scale.x;
-		offset.y += letterOffset[1] * scale.y - (add - height);
-	}
-
-	override public function updateHitbox()
-	{
-		super.updateHitbox();
-		updateLetterOffset();
+		return true;
 	}
 }

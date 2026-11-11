@@ -1,6 +1,6 @@
 package objects;
 
-import backend.animation.PsychAnimationController;
+import backend.animation.LegendAnimationController;
 import shaders.RGBPalette;
 import flixel.system.FlxAssets.FlxShader;
 
@@ -49,7 +49,7 @@ class NoteSplash extends FlxSprite
 	{
 		super(x, y);
 
-		animation = new PsychAnimationController(this);
+		animation = new LegendAnimationController(this);
 
 		rgbShader = new PixelSplashShaderRef();
 		shader = rgbShader.shader;
