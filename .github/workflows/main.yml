@@ -82,7 +82,7 @@ jobs:
       - name: Checkout Target Release Repository
         uses: actions/checkout@v4
         with:
-          repository: 'Tubenyan-Official-YT/fnf-battle-cats-legend-begins'
+          repository: 'fnf-mod-maker-67/LegendEngine-restored-not-official'
           token: ${{ secrets.FNF_TOKEN }}
           path: ./target_repo
 
