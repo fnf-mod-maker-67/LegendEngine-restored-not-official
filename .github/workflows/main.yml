@@ -98,5 +98,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@://github.com"
           git add .
-          git commit -m "Legend Engine 자동 업데이트 빌드 파일 배달 완료" || echo "변경 사항 없음"
+          git commit -m "소중한 튜브냥주인님께 Legend Engine 자동화 업데이트 배달 완료" || echo "변경 사항 없음"
           git push origin main
