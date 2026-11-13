@@ -1,7 +1,9 @@
 package states;
 
 import backend.Gamatoto;
-import backend.Adventure;
+import backend.Clock;
+import backend.Song;
+import backend.Language;
 import backend.Conductor;
 import flixel.FlxSprite;
 import flixel.text.FlxText;
@@ -12,29 +14,36 @@ import openfl.utils.AssetType;
 import flixel.text.FlxText.FlxTextBorderStyle;
 
 /**
- * 가마토토 탐험 화면.
- * TODO: adventureNames는 임시 placeholder임. 실제 모험 목록으로 교체 필요.
+ * 가마토토 챌린지 화면.
+ * 지역(좌우)을 고르고 난이도(상하)를 골라 엔터로 챌린지 곡을 시작한다.
+ * 곡 이름 규칙: data/<지역폴더>/<지역폴더>-<난이도>.json (예: plains/plains-easy)
+ * 쿨타임은 지역 x 난이도 각각, 곡을 시작할 때 걸린다.
  * 가마토토 관련 이미지는 전부 images/gamatoto/ 안에 위치 (없으면 자동으로 대체 그래픽 사용).
  * 언락: Gamatoto.unlockedNames에 이름 저장됨. Lua에서 unlockGamatoto(name) 함수로 풀어줌.
  */
 class GamatotoState extends MusicBeatState
 {
+	// 화면에 보이는 지역 이름 / 차트 폴더명 (같은 순서)
 	var adventureNames:Array<String> = ["평화 초원", "쿵후 왕국", "사바의 사막"];
-	var durations:Array<Float> = [3600, 3600 * 3, 3600 * 6]; // 1h, 3h, 6h
-	var durationLabels:Array<String> = ["1시간", "3시간", "6시간"];
+	var chartFolders:Array<String> = ["plains", "kh_kingdom", "savadesert"];
+
+	// 난이도: 차트 접미사 / 번역 키 / 기본 표시 텍스트 / 쿨타임(초)
+	var diffIds:Array<String> = ["easy", "normal", "hard"];
+	var diffDefaults:Array<String> = ["Easy", "Normal", "Hard"];
+	var cooldowns:Array<Float> = [3600, 3600 * 3, 3600 * 6]; // 1h, 3h, 6h (난이도별로 바꿔도 됨)
 
 	// 배경 이미지 없을 때 쓸 진한 초록색 (안 쨍하게)
 	static inline var FALLBACK_BG_COLOR:FlxColor = 0xFF234433;
 
 	var curAdIndex:Int = 0;
-	var curDuration:Int = 0;
+	var curDiff:Int = 0;
 
 	var catSprite:FlxSprite;
 	var curWindow:Window;
 	var windowTexts:Array<FlxText> = [];
 	var windowTitle:FlxText; // 창 위쪽에 모험 이름 표시 (창 이미지는 통일해서 씀)
 
-	// idle: 창 닫힌 상태, carousel: 모험/시간 선택중, status: 진행중/완료 표시
+	// idle: 창 닫힌 상태, carousel: 지역/난이도 선택중
 	var uiState:String = "idle";
 
 
@@ -103,16 +112,8 @@ class GamatotoState extends MusicBeatState
 
 	function openWindow()
 	{
-		if (Gamatoto.curAd != null)
-		{
-			uiState = "status";
-			openStatusWindow();
-		}
-		else
-		{
-			uiState = "carousel";
-			openAdventureWindow();
-		}
+		uiState = "carousel";
+		openAdventureWindow();
 	}
 
 	// 창 이미지는 gamatoto/window 하나로 통일. 이름은 위쪽에 텍스트로 표시
@@ -143,44 +144,46 @@ class GamatotoState extends MusicBeatState
 		}
 		else
 		{
-			for (i in 0...durationLabels.length)
+			for (i in 0...diffIds.length)
 			{
-				var t:FlxText = new FlxText(0, 0, 200, durationLabels[i], 24);
+				var t:FlxText = new FlxText(0, 0, 260, "", 24);
 				t.antialiasing = ClientPrefs.data.antialiasing;
 				t.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, CENTER);
 				t.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2, 1);
-				curWindow.addItemAt(50, 60 + i * 50, t);
+				curWindow.addItemAt(20, 60 + i * 50, t);
 				windowTexts.push(t);
 			}
-			updateDurationHighlight();
+			refreshDiffTexts();
 		}
 	}
 
-	function openStatusWindow()
+	// 난이도 이름(번역) + 쿨타임 중이면 남은 시간 표시
+	function refreshDiffTexts()
 	{
-		closeWindow(false);
-
-		curWindow = new Window('gamatoto/window', 0, true, true);
-		add(curWindow);
-
-		windowTitle = new FlxText(0, 20, 300, Gamatoto.curAd.name, 28);
-		windowTitle.setFormat(Paths.font("vcr.ttf"), 28, FlxColor.WHITE, CENTER);
-		windowTitle.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 3, 1);
-		windowTitle.antialiasing = ClientPrefs.data.antialiasing;
-		curWindow.addItemAt(0, 20, windowTitle);
-
-		var t:FlxText = new FlxText(0, 0, 300, "", 24);
-		t.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, CENTER);
-		t.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2, 1);
-		t.antialiasing = ClientPrefs.data.antialiasing;
-		curWindow.addItem("screenCenter", t);
-		windowTexts.push(t);
+		var region:String = chartFolders[curAdIndex];
+		for (i in 0...windowTexts.length)
+		{
+			if (i >= diffIds.length) break;
+			var label:String = Language.getPhrase('gamatoto_' + diffIds[i], diffDefaults[i]);
+			var left:Float = Gamatoto.getCooldownLeft(region, i);
+			if (left > 0)
+				label += "  (" + formatTime(left) + ")";
+			windowTexts[i].text = label;
+			windowTexts[i].alpha = (i == curDiff) ? 1 : 0.6;
+			if (left > 0) windowTexts[i].color = FlxColor.GRAY;
+			else windowTexts[i].color = FlxColor.WHITE;
+		}
 	}
 
-	function updateDurationHighlight()
+	function formatTime(sec:Float):String
 	{
-		for (i in 0...windowTexts.length)
-			windowTexts[i].alpha = (i == curDuration) ? 1 : 0.6;
+		var total:Int = Std.int(Math.ceil(sec));
+		var h:Int = Std.int(total / 3600);
+		var m:Int = Std.int((total % 3600) / 60);
+		var sc:Int = total % 60;
+		if (h > 0) return h + "h " + m + "m";
+		if (m > 0) return m + "m " + sc + "s";
+		return sc + "s";
 	}
 
 	function closeWindow(fullClose:Bool = true)
@@ -199,13 +202,37 @@ class GamatotoState extends MusicBeatState
 	function startSelectedAdventure()
 	{
 		var name:String = adventureNames[curAdIndex];
-		if (!Gamatoto.isUnlocked(name)) return; // 잠긴 모험은 시작 불가
+		if (!Gamatoto.isUnlocked(name)) return; // 잠긴 지역은 시작 불가
+
+		var folder:String = chartFolders[curAdIndex];
+		if (!Gamatoto.canChallenge(folder, curDiff))
+		{
+			FlxG.sound.play(Paths.sound('cancelMenu'));
+			return; // 쿨타임 중
+		}
+
+		var chartName:String = folder + "-" + diffIds[curDiff]; // 예: plains-easy
+		try
+		{
+			Song.loadFromJson(chartName, folder);
+		}
+		catch (e:haxe.Exception)
+		{
+			trace('가마토토 차트 로드 실패: ' + chartName + ' / ' + e.message);
+			FlxG.sound.play(Paths.sound('cancelMenu'));
+			return;
+		}
 
 		FlxG.sound.play(Paths.sound('confirmMenu'));
-		var ad:Adventure = new Adventure(name, durations[curDuration]);
-		ad.isLocked = false;
-		Gamatoto.startAdventure(ad);
-		closeWindow();
+		Gamatoto.startCooldown(folder, curDiff, cooldowns[curDiff]); // 곡 시작할 때 쿨타임 시작
+		Gamatoto.inChallenge = true;
+
+		PlayState.isStoryMode = false;
+		PlayState.storyDifficulty = curDiff;
+
+		LoadingState.prepareToSong();
+		LoadingState.loadAndSwitchState(new PlayState());
+		FlxG.sound.music.stop();
 	}
 
 	override function update(elapsed:Float)
@@ -234,6 +261,8 @@ class GamatotoState extends MusicBeatState
 				}
 
 			case "carousel":
+				var unlocked:Bool = Gamatoto.isUnlocked(adventureNames[curAdIndex]);
+
 				if (controls.UI_LEFT_P || controls.UI_RIGHT_P)
 				{
 					curAdIndex = FlxMath.wrap(curAdIndex + (controls.UI_LEFT_P ? -1 : 1), 0, adventureNames.length - 1);
@@ -242,11 +271,11 @@ class GamatotoState extends MusicBeatState
 				}
 				else if (controls.UI_UP_P || controls.UI_DOWN_P)
 				{
-					if (Gamatoto.isUnlocked(adventureNames[curAdIndex]))
+					if (unlocked)
 					{
-						curDuration = FlxMath.wrap(curDuration + (controls.UI_UP_P ? -1 : 1), 0, durationLabels.length - 1);
+						curDiff = FlxMath.wrap(curDiff + (controls.UI_UP_P ? -1 : 1), 0, diffIds.length - 1);
 						FlxG.sound.play(Paths.sound('scrollMenu'));
-						updateDurationHighlight();
+						refreshDiffTexts();
 					}
 				}
 				else if (controls.ACCEPT)
@@ -258,43 +287,21 @@ class GamatotoState extends MusicBeatState
 					FlxG.sound.play(Paths.sound('cancelMenu'));
 					closeWindow();
 				}
-				else if (FlxG.mouse.justPressed && Gamatoto.isUnlocked(adventureNames[curAdIndex]))
+				else if (FlxG.mouse.justPressed && unlocked)
 				{
 					for (i in 0...windowTexts.length)
 					{
 						if (mouseOverlaps(windowTexts[i]))
 						{
-							curDuration = i;
+							curDiff = i;
 							startSelectedAdventure();
 							break;
 						}
 					}
 				}
 
-			case "status":
-				var t:FlxText = windowTexts[0];
-				if (Gamatoto.curAd.completed)
-				{
-					t.text = "탐험 완료!\n엔터: 보상받기";
-					if (controls.ACCEPT || (FlxG.mouse.justPressed && mouseOverlaps(t)))
-					{
-						FlxG.sound.play(Paths.sound('confirmMenu'));
-						Gamatoto.claim();
-						closeWindow();
-					}
-				}
-				else
-				{
-					var remain:Float = Gamatoto.getRemaining();
-					t.text = "남은시간: " + Std.int(remain / 60) + "분";
-					if (remain <= 0) Gamatoto.init();
-				}
-
-				if (controls.BACK)
-				{
-					FlxG.sound.play(Paths.sound('cancelMenu'));
-					closeWindow();
-				}
+				// 쿨타임 남은 시간 실시간 갱신
+				if (unlocked && curWindow != null) refreshDiffTexts();
 		}
 	}
 }

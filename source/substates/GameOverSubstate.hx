@@ -7,6 +7,8 @@ import flixel.FlxObject;
 import flixel.FlxSubState;
 import flixel.math.FlxPoint;
 
+import backend.Gamatoto;
+import states.GamatotoState;
 import states.StoryMenuState;
 import states.FreeplayState;
 
@@ -166,7 +168,12 @@ class GameOverSubstate extends MusicBeatSubstate
 				PlayState.chartingMode = false;
 	
 				Mods.loadTopMod();
-				if (PlayState.isStoryMode)
+				if (Gamatoto.inChallenge)
+				{
+					Gamatoto.inChallenge = false;
+					MusicBeatState.switchState(new GamatotoState());
+				}
+				else if (PlayState.isStoryMode)
 					MusicBeatState.switchState(new StoryMenuState());
 				else
 					MusicBeatState.switchState(new FreeplayState());

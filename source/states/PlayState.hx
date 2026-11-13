@@ -1,5 +1,6 @@
 package states;
 
+import backend.Gamatoto;
 import backend.Highscore;
 import backend.StageData;
 import backend.WeekData;
@@ -2534,7 +2535,14 @@ class PlayState extends MusicBeatState
 				#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 
 				canResync = false;
-				MusicBeatState.switchState(new FreeplayState());
+				if (Gamatoto.inChallenge)
+				{
+					// 가마토토 챌린지 곡이 끝났으니 가마토토 화면으로 복귀
+					Gamatoto.inChallenge = false;
+					MusicBeatState.switchState(new GamatotoState());
+				}
+				else
+					MusicBeatState.switchState(new FreeplayState());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				changedDifficulty = false;
 			}
