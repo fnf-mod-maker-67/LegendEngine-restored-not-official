@@ -220,6 +220,8 @@ class GamatotoState extends MusicBeatState
 		{
 			trace('가마토토 차트 로드 실패: ' + chartName + ' / ' + e.message);
 			FlxG.sound.play(Paths.sound('cancelMenu'));
+			openSubState(new substates.ErrorSubstate(
+				Language.getPhrase("gamatoto_no_chart", "차트가 없어요!\n") + chartName));
 			return;
 		}
 
