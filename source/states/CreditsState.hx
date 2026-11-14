@@ -38,10 +38,10 @@ class CreditsState extends MusicBeatState
 
 		var defaultList:Array<Array<String>> = [ //Name - Icon name - Description - Link - BG Color
 			["Original game"],
-			["FNF Crew", 		  "fnf",   "", "https://ninja-muffin24.itch.io/funkin", 		 "5165F6"],
-			["Psych Engine Crew", "psych", "", "https://github.com/ShadowMario/FNF-PsychEngine", "5165F6"],
+			["FNF Crew", 		  	"fnf",   			"Made OG FNF Game", 				"https://ninja-muffin24.itch.io/funkin", 		 "5165F6"],
+			["Psych Engine Crew", 	"psych", 			"Made Psych 1.0.4 for L.E.", 		"https://github.com/ShadowMario/FNF-PsychEngine", "5165F6"],
 			["Mod dev"], // 새로운 카테고리 이름
-			["Tubenyan",            "tubenyan",         "ALL OF MOD",       				"https://guns.lol/tubenyan",   		            "41c0ff"],
+			["Tubenyan",            "tubenyan",         "Actually All of mod",       		"https://guns.lol/tubenyan",   		            "41c0ff"],
 			["GreenGreen",          "green",            "Animator",       					"https://www.youtube.com/@Korean-Green-14",     "41c0ff"],
 			["Barty",            	"barty",            "Animator",       					"",                                             "41c0ff"],
 			["Dahee Song",          "songdah",          "Artist",       					"",     										"41c0ff"],
@@ -49,7 +49,7 @@ class CreditsState extends MusicBeatState
 			["Gemini",              "gemini",           'Made some code for Tubenyan',    	"https://gemini.google.com/app",     			'4285F4'],
 			["Claude",              "claude",           'Same with Gemini',                 "https://claude.ai",     						'4285F4'],
 			["Our DISCORD"],
-			["Join In Legend Begins Team!!", "discord", "", 								"https://discord.gg/tDCmRFtPjv", 				"5165F6"],
+			["Join In Mod Team!", "discord", "", 								"https://discord.gg/tDCmRFtPjv", 				"5165F6"],
 			[""]
 		];
 		
@@ -59,11 +59,12 @@ class CreditsState extends MusicBeatState
 		for (i => credit in creditsStuff)
 		{
 			var isSelectable:Bool = !unselectableCheck(i);
-			var optionText:FlxText = new FlxText(0, 0, 0, credit[0], isSelectable ? 40 : 48);
-	
-	// 폰트, 크기, 색상, 정렬 방식, 테두리 스타일 설정
-			optionText.setFormat(Paths.font("vcr.ttf"), isSelectable ? 40 : 48, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			optionText.borderSize = 2;
+			var scale:Int = isSelectable ? 30 : 52;
+			var optionText:FlxText = new FlxText(0, 0, 0, credit[0], scale);
+			
+			optionText.setFormat(Paths.font("vcr.ttf"), scale, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			optionText.borderSize = isSelectable ? 3 : 6;
+			optionText.antialiasing = true;
 			grpOptions.add(optionText);
 
 			if(isSelectable)
@@ -99,7 +100,7 @@ class CreditsState extends MusicBeatState
 		add(descText);
 		
 		bigIcon = new FlxSprite();
-		bigIcon.antialiasing = ClientPrefs.data.antialiasing;
+		bigIcon.antialiasing = true;
 		add(bigIcon);
 		
 		changeSelection();
@@ -162,10 +163,11 @@ class CreditsState extends MusicBeatState
 		var lerpVal:Float = Math.exp(-elapsed * 12);
 		for (i => item in grpOptions.members)
 		{
-    		var targetY:Float = (FlxG.height / 2 - item.height / 2) + ((i - curSelected) * 150);
-    		item.y = FlxMath.lerp(targetY, item.y, lerpVal);
-    		item.x = FlxMath.lerp(50, item.x, lerpVal);
-		}		
+		    var targetY:Float = (FlxG.height / 2 - item.height / 2) + ((i - curSelected) * 150);
+		    var targetX:Float = unselectableCheck(i) ? 50 : 100;
+		    item.y = FlxMath.lerp(targetY, item.y, lerpVal);
+		    item.x = FlxMath.lerp(targetX, item.x, lerpVal);
+		}
 		super.update(elapsed);
 	}
 
@@ -178,8 +180,14 @@ class CreditsState extends MusicBeatState
 			curSelected = FlxMath.wrap(curSelected + change, 0, creditsStuff.length - 1);
 		}
 		while(unselectableCheck(curSelected));
-		var imagePath = Paths.image("credits/" + creditsStuff[curSelected][1]);
+		
+		var name:String = creditsStuff[curSelected][1];
+		var imagePath:String = Paths.image("credits/missing_icon");
+		if (Paths.fileExists('images/credits/' + name + '.png', IMAGE)) {
+    		imagePath = Paths.image('credits/' + name);
+		}
 		bigIcon.loadGraphic(imagePath);
+		
 		for (num => item in grpOptions.members)
 		{
 			if(!unselectableCheck(num)) {
@@ -197,10 +205,10 @@ class CreditsState extends MusicBeatState
     		if (moveTween != null) moveTween.cancel();
     		moveTween = FlxTween.tween(descText, {y : descText.y + 75}, 0.25, {ease: FlxEase.sineOut});
 		}
-		bigIcon.setGraphicSize(300, 300 * bigIcon.height / bigIcon.width);
+		bigIcon.setGraphicSize(250, 0);
 		bigIcon.updateHitbox();
-		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2;
-		bigIcon.y = FlxG.height * 0.25 - bigIcon.height / 2;
+		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2 + 50;
+		bigIcon.y = FlxG.height * 0.25 - bigIcon.height / 2 + 100;
 	}
 
 	#if MODS_ALLOWED
