@@ -60,11 +60,11 @@ class CreditsState extends MusicBeatState
 		for (i => credit in creditsStuff)
 		{
 			var isSelectable:Bool = !unselectableCheck(i);
-			var scale:Int = isSelectable ? 35 : 48;
+			var scale:Int = isSelectable ? 45 : 57;
 			var optionText:FlxText = new FlxText(0, 0, 0, credit[0], scale);
 			
 			optionText.setFormat(Paths.font("vcr.ttf"), scale, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			optionText.borderSize = isSelectable ? 3 : 4;
+			optionText.borderSize = isSelectable ? 2 : 3;
 			optionText.antialiasing = true;
 			grpOptions.add(optionText);
 
@@ -83,6 +83,7 @@ class CreditsState extends MusicBeatState
 				if(str.endsWith('-pixel')) icon.antialiasing = false;
 				icon.xAdd = optionText.width + 10;
 				icon.yAdd = (optionText.height - icon.height) / 2;
+				icon.setGraphicSize(100, 0);
 				icon.sprTracker = optionText;
 	
 				// using a FlxGroup is too much fuss!
@@ -94,8 +95,8 @@ class CreditsState extends MusicBeatState
 			}
 		}
 
-		descText = new FlxText(FlxG.width * 0.55, FlxG.height * 0.5, FlxG.width * 0.365, "", 28);
-		descText.setFormat(Paths.font("pixel-latin.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		descText = new FlxText(FlxG.width * 0.55, FlxG.height * 0.5, FlxG.width * 0.365, "");
+		descText.setFormat(Paths.font("pixel-latin.ttf"), 25, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.borderSize = 4;
 		descText.scrollFactor.set();
 		add(descText);
@@ -164,7 +165,7 @@ class CreditsState extends MusicBeatState
 		var lerpVal:Float = Math.exp(-elapsed * 12);
 		for (i => item in grpOptions.members)
 		{
-		    var targetY:Float = (FlxG.height / 2 - item.height / 2) + ((i - curSelected) * 150);
+		    var targetY:Float = (FlxG.height / 2 - item.height / 2) + ((i - curSelected) * 100);
 		    var targetX:Float = unselectableCheck(i) ? 50 : 100;
 		    item.y = FlxMath.lerp(targetY, item.y, lerpVal);
 		    item.x = FlxMath.lerp(targetX, item.x, lerpVal);
