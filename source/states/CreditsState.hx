@@ -95,7 +95,7 @@ class CreditsState extends MusicBeatState
 			}
 		}
 
-		descText = new FlxText(FlxG.width / 2, FlxG.height * 0.5, FlxG.width * 0.365, "");
+		descText = new FlxText(FlxG.width / 2, 0, FlxG.width * 0.5, "");
 		descText.setFormat(Paths.font("pixel-latin.ttf"), 25, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.borderSize = 4;
 		descText.scrollFactor.set();
@@ -208,7 +208,7 @@ class CreditsState extends MusicBeatState
 		bigIcon.setGraphicSize(250, 0);
 		bigIcon.updateHitbox();
 		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2;
-		bigIcon.y = FlxG.height * 0.25 - bigIcon.height / 2;
+		bigIcon.y = FlxG.height * 0.3 - bigIcon.height / 2;
 	}
 
 	#if MODS_ALLOWED
