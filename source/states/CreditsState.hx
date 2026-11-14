@@ -184,11 +184,7 @@ class CreditsState extends MusicBeatState
 		while(unselectableCheck(curSelected));
 		
 		var name:String = creditsStuff[curSelected][1];
-		var imagePath:FlxGraphic = Paths.image("credits/missing_icon");
-		if (Paths.fileExists('images/credits/' + name + '.png', IMAGE)) {
-    		imagePath = Paths.image('credits/' + name);
-		}
-		bigIcon.loadGraphic(imagePath);
+		bigIcon.loadGraphic(Paths.image('credits/' + name) ?? Paths.image('credits/missing_icon'));
 		
 		for (num => item in grpOptions.members)
 		{
