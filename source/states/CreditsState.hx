@@ -39,16 +39,16 @@ class CreditsState extends MusicBeatState
 
 		var defaultList:Array<Array<String>> = [ //Name - Icon name - Description - Link - BG Color
 			["Original game"],
-			["FNF Crew", 		  	"fnf",   			"Made OG FNF Game", 				"https://ninja-muffin24.itch.io/funkin", 		 "5165F6"],
-			["Psych Engine Crew", 	"psych", 			"Made Psych 1.0.4 for L.E.", 		"https://github.com/ShadowMario/FNF-PsychEngine", "5165F6"],
-			["Mod dev"], // 새로운 카테고리 이름
+			["Funkin Crew", 		  	"fnf",   			"Made Original Friday Night Funkin'", 				"https://ninja-muffin24.itch.io/funkin", 		 "5165F6"],
+			["Psych Engine Crew", 	"psych", 			"Made Psych Engine 1.0.4\nCloned for Legend Engine", 		"https://github.com/ShadowMario/FNF-PsychEngine", "5165F6"],
+			["Mod devs"],
 			["Tubenyan",            "tubenyan",         "Actually All of mod",       		"https://guns.lol/tubenyan",   		            "41c0ff"],
 			["GreenGreen",          "green",            "Animator",       					"https://www.youtube.com/@Korean-Green-14",     "41c0ff"],
 			["Barty",            	"barty",            "Animator",       					"",                                             "41c0ff"],
 			["Dahee Song",          "songdah",          "Artist",       					"",     										"41c0ff"],
 			["Used AI"],
-			["Gemini",              "gemini",           'Made some code for Tubenyan',    	"https://gemini.google.com/app",     			'4285F4'],
-			["Claude",              "claude",           'Same with Gemini',                 "https://claude.ai",     						'4285F4'],
+			["Gemini",              "gemini",           'Made some code\nfor Tubenyan',    	"https://gemini.google.com/app",     			'4285F4'],
+			["Claude+Base44",       "claude",           'Same with Gemini',                 "https://claude.ai",     						'4285F4'],
 			["Discord"],
 			["Mod Official Discord","discord", 			"Join to our talking!",				"https://discord.gg/tDCmRFtPjv", 							"5165F6"],
 			[""]
