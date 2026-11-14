@@ -1,6 +1,7 @@
 package states;
 
 import objects.AttachedSprite;
+import flixel.graphics.FlxGraphic;
 
 class CreditsState extends MusicBeatState
 {
