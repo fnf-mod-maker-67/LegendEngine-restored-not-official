@@ -82,8 +82,15 @@ class AchievementsMenuState extends MusicBeatState
 			var desc:FlxText = new FlxText(spr.x + spr.width + 20, spr.y + 70);
 			name.text = option.displayName;
 			desc.text = option.description;
-			name.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE);
-			desc.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.WHITE);
+			
+			name.setFormat(Paths.font("vcr.ttf"), 30, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			name.borderSize = 1.5;
+			desc.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			desc.borderSize = 1.5;
+			
+			name.antialiasing = ClientPrefs.data.antialiasing;
+			desc.antialiasing = ClientPrefs.data.antialiasing;
+			
 			optionGrp.add(spr);
 			optionGrp.add(name);
 			optionGrp.add(desc);
