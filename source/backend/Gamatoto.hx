@@ -47,6 +47,16 @@ class Gamatoto
 		}
 	}
 
+	#if DEBUG
+	// 디버그용: 주어진 지역 이름을 전부 언락
+	public static function unlockAll(names:Array<String>):Void
+	{
+		for (n in names)
+			if (!isUnlocked(n)) unlockedNames.push(n);
+		save();
+	}
+	#end
+
 	// 곡을 시작할 때 호출: seconds 만큼 쿨타임 시작
 	public static function startCooldown(region:String, diff:Int, seconds:Float):Void
 	{

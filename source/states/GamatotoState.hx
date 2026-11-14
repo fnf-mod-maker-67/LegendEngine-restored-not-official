@@ -249,6 +249,16 @@ class GamatotoState extends MusicBeatState
 
 		super.update(elapsed);
 
+		#if DEBUG
+		// Insert: 모든 지역 언락 (디버그 빌드 전용)
+		if (FlxG.keys.justPressed.INSERT)
+		{
+			Gamatoto.unlockAll(adventureNames);
+			FlxG.sound.play(Paths.sound('confirmMenu'));
+			if (uiState == "carousel") openAdventureWindow(); // 열려있는 창 즉시 갱신
+		}
+		#end
+
 		switch (uiState)
 		{
 			case "idle":
