@@ -33,10 +33,8 @@ enum abstract AchievementOp(String)
 class Achievements {
 	public static function init()
 	{
-		createAchievement('friday_night_play',		{name: "Friday night에 Friday night funkin 플레이하기", description: "\n금요일 밤에.... 플레이하기.", hidden: true});
-		#if BASE_GAME_FILES
-		createAchievement('debugger',				{name: "디버거", description: "Test 곡을 차트에디터에서 플레이하기", hidden: true});
-		#end
+		createAchievement('friday_night_play',		{name: "Friday night에 Friday night funkin 플레이하기\n", description: "금요일 밤에.... 플레이하기.", hidden: true});
+		createAchievement('Modder',					{name: "디버거", description: "Test 곡을 차트에디터에서 플레이하기", hidden: true});
 		//dont delete this thing below
 		_originalLength = _sortID + 1;
 	}
