@@ -160,6 +160,9 @@ class GamatotoState extends MusicBeatState
 	// 난이도 이름(번역) + 쿨타임 중이면 남은 시간 표시
 	function refreshDiffTexts()
 	{
+		// 잠긴 지역은 windowTexts에 "잠겨있음" 1개만 들어있으므로 난이도 갱신 대상이 아님
+		if (!Gamatoto.isUnlocked(adventureNames[curAdIndex])) return;
+
 		var region:String = chartFolders[curAdIndex];
 		for (i in 0...windowTexts.length)
 		{
@@ -269,6 +272,7 @@ class GamatotoState extends MusicBeatState
 				{
 					curAdIndex = FlxMath.wrap(curAdIndex + (controls.UI_LEFT_P ? -1 : 1), 0, adventureNames.length - 1);
 					FlxG.sound.play(Paths.sound('scrollMenu'));
+					curDiff = 0;
 					openAdventureWindow();
 				}
 				else if (controls.UI_UP_P || controls.UI_DOWN_P)
