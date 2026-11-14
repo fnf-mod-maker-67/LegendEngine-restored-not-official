@@ -12,9 +12,8 @@ class CreditsState extends MusicBeatState
 
 	var bg:FlxSprite;
 	var descText:FlxText;
-	var intendedColor:FlxColor;
-	var descBox:AttachedSprite;
-
+	var bigIcon:FlxSprite;
+	
 	var offsetThing:Float = -75;
 
 	override function create()
@@ -41,16 +40,16 @@ class CreditsState extends MusicBeatState
 			["Original game"],
 			["FNF Crew", 		  "fnf",   "", "https://ninja-muffin24.itch.io/funkin", 		 "5165F6"],
 			["Psych Engine Crew", "psych", "", "https://github.com/ShadowMario/FNF-PsychEngine", "5165F6"],
-			[""],
 			["Mod dev"], // 새로운 카테고리 이름
-			["Tubenyan",            "tubenyan",         "ALL OF MOD",       									    "https://youtube.com/@tubenyan",     "41c0ff"], // 본인 정보
-			["NyangBab",            "nb",               'Test',                                                     "https://discord.gg/uwbTRBDJsb",     'FFFFFF'],// 한 줄 띄우기
-			["Gemini",              "gemini",           'Made haxe Source for Tubenyan',                            "https://gemini.google.com/app",     '4285F4'],
-			["Claude",              "claude",           'Same with Gemini',                                         "https://claude.ai",     '4285F4'],
-			["Hyeville",              "hyeb",           'Drew Gamebanana thumbnail',                                "https://claude.ai",     '4285F4'],
-			[''],
+			["Tubenyan",            "tubenyan",         "ALL OF MOD",       				"https://guns.lol/tubenyan",   		            "41c0ff"],
+			["GreenGreen",          "green",            "Animator",       					"https://www.youtube.com/@Korean-Green-14",     "41c0ff"],
+			["Barty",            	"barty",            "Animator",       					"",                                             "41c0ff"],
+			["Dahee Song",          "songdah",          "Artist",       					"",     										"41c0ff"],
+			["Used AI"],
+			["Gemini",              "gemini",           'Made some code for Tubenyan',    	"https://gemini.google.com/app",     			'4285F4'],
+			["Claude",              "claude",           'Same with Gemini',                 "https://claude.ai",     						'4285F4'],
 			["Our DISCORD"],
-			["Join SD Card Community!!", "discord", "", "https://discord.gg/4K49EHG8P3", "5165F6"],
+			["Join In Legend Begins Team!!", "discord", "", 								"https://discord.gg/tDCmRFtPjv", 				"5165F6"],
 			[""]
 		];
 		
@@ -92,24 +91,17 @@ class CreditsState extends MusicBeatState
 				if(curSelected == -1) curSelected = i;
 			}
 		}
-		
-		descBox = new AttachedSprite();
-		descBox.makeGraphic(1, 1, FlxColor.BLACK);
-		descBox.xAdd = -10;
-		descBox.yAdd = -10;
-		descBox.alphaMult = 0.6;
-		descBox.alpha = 0.6;
-		add(descBox);
 
-		descText = new FlxText(50, FlxG.height + offsetThing - 25, 1180, "", 32);
-		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER/*, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK*/);
+		descText = new FlxText(FlxG.width / 2, FlxG.height * 0.5, FlxG.width / 2, "", 36);
+		descText.setFormat(Paths.font("pixel-latin.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		descText.borderSize = 4;
 		descText.scrollFactor.set();
-		//descText.borderSize = 2.4;
-		descBox.sprTracker = descText;
 		add(descText);
-
 		
-		intendedColor = bg.color;
+		bigIcon = new FlxSprite();
+		bigIcon.antialiasing = ClientPrefs.data.antialiasing;
+		add(bigIcon);
+		
 		changeSelection();
 		super.create();
 	}
@@ -156,10 +148,10 @@ class CreditsState extends MusicBeatState
 					}
 				}
 			}
-
-			if(controls.ACCEPT && (creditsStuff[curSelected][3] == null || creditsStuff[curSelected][3].length > 4)) {
-				CoolUtil.browserLoad(creditsStuff[curSelected][3]);
-			}
+			var link = creditsStuff[curSelected][3];
+			if(controls.ACCEPT && link != null && link.length > 4)
+    			CoolUtil.browserLoad(link);
+			
 			if (controls.BACK)
 			{
 				FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -170,27 +162,10 @@ class CreditsState extends MusicBeatState
 		var lerpVal:Float = Math.exp(-elapsed * 12);
 		for (i => item in grpOptions.members)
 		{
-			var targetY:Float = (FlxG.height / 2 - item.height / 2) + ((i - curSelected) * 150);
-			item.y = FlxMath.lerp(targetY, item.y, lerpVal);
-
-			var iconWidth:Float = 0;
-			for (icon in iconArray) {
-				if (icon.sprTracker == item)
-				{
-					iconWidth = icon.width + 10; // 아이콘 너비 + 여백(10px)
-					break;
-				}
-			}
-
-	// [텍스트 너비 + 아이콘 너비] 전체 그룹의 가로 중앙 X좌표 계산
-			var totalWidth:Float = item.width + iconWidth;
-			var targetX:Float = (FlxG.width - totalWidth) / 2;
-
-			if (i == curSelected) {
-				targetX -= 70;
-			}
-			item.x = FlxMath.lerp(targetX, item.x, lerpVal);
-		}
+    		var targetY:Float = (FlxG.height / 2 - item.height / 2) + ((i - curSelected) * 150);
+    		item.y = FlxMath.lerp(targetY, item.y, lerpVal);
+    		item.x = FlxMath.lerp(50, item.x, lerpVal);
+		}		
 		super.update(elapsed);
 	}
 
@@ -203,11 +178,8 @@ class CreditsState extends MusicBeatState
 			curSelected = FlxMath.wrap(curSelected + change, 0, creditsStuff.length - 1);
 		}
 		while(unselectableCheck(curSelected));
-
-		var newColor:FlxColor = CoolUtil.colorFromString(creditsStuff[curSelected][4]);
-		//trace('The BG color is: $newColor');
-
-		// changeSelection() 함수 내부
+		var imagePath = Paths.image("credits/" + creditsStuff[curSelected][1]);
+		bigIcon.loadGraphic(imagePath);
 		for (num => item in grpOptions.members)
 		{
 			if(!unselectableCheck(num)) {
@@ -218,18 +190,17 @@ class CreditsState extends MusicBeatState
 		}
 
 		descText.text = creditsStuff[curSelected][2];
-		if(descText.text.trim().length > 0)
+		descText.visible = descText.text.trim().length > 0;
+		if (descText.visible)
 		{
-			descText.visible = descBox.visible = true;
-			descText.y = FlxG.height - descText.height + offsetThing - 60;
-	
-			if(moveTween != null) moveTween.cancel();
-			moveTween = FlxTween.tween(descText, {y : descText.y + 75}, 0.25, {ease: FlxEase.sineOut});
-	
-			descBox.setGraphicSize(Std.int(descText.width + 20), Std.int(descText.height + 25));
-			descBox.updateHitbox();
+			descText.y = FlxG.height * 0.5 - 75;
+    		if (moveTween != null) moveTween.cancel();
+    		moveTween = FlxTween.tween(descText, {y : descText.y + 75}, 0.25, {ease: FlxEase.sineOut});
 		}
-		else descText.visible = descBox.visible = false;
+		bigIcon.setGraphicSize(300, 300 * bigIcon.height / bigIcon.width);
+		bigIcon.updateHitbox();
+		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2;
+		bigIcon.y = FlxG.height * 0.25 - bigIcon.height / 2;
 	}
 
 	#if MODS_ALLOWED
