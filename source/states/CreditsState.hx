@@ -185,6 +185,10 @@ class CreditsState extends MusicBeatState
 		
 		var name:String = creditsStuff[curSelected][1];
 		bigIcon.loadGraphic(Paths.image('credits/' + name) ?? Paths.image('credits/missing_icon'));
+		bigIcon.setGraphicSize(250, 0);
+		bigIcon.updateHitbox();
+		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2 + 40;
+		bigIcon.y = FlxG.height * 0.3 - bigIcon.height / 2;
 		
 		for (num => item in grpOptions.members)
 		{
@@ -199,16 +203,11 @@ class CreditsState extends MusicBeatState
 		descText.visible = descText.text.trim().length > 0;
 		if (descText.visible)
 		{
-    		var targetY:Float = FlxG.height * 0.5 - descText.height / 2;
-    		descText.y = targetY - 75;
-    		if (moveTween != null) moveTween.cancel();
-    		moveTween = FlxTween.tween(descText, {y: targetY}, 0.25, {ease: FlxEase.sineOut});
+		    var targetY:Float = bigIcon.y + bigIcon.height + 40;
+		    descText.y = targetY + 75;
+		    if (moveTween != null) moveTween.cancel();
+		    moveTween = FlxTween.tween(descText, {y: targetY}, 0.25, {ease: FlxEase.sineOut});
 		}
-		
-		bigIcon.setGraphicSize(250, 0);
-		bigIcon.updateHitbox();
-		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2;
-		bigIcon.y = FlxG.height * 0.3 - bigIcon.height / 2;
 	}
 
 	#if MODS_ALLOWED
