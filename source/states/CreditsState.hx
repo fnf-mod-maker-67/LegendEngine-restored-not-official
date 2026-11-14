@@ -49,8 +49,8 @@ class CreditsState extends MusicBeatState
 			["Used AI"],
 			["Gemini",              "gemini",           'Made some code for Tubenyan',    	"https://gemini.google.com/app",     			'4285F4'],
 			["Claude",              "claude",           'Same with Gemini',                 "https://claude.ai",     						'4285F4'],
-			["Our DISCORD"],
-			["Join In Mod Team!", "discord", "", 								"https://discord.gg/tDCmRFtPjv", 				"5165F6"],
+			["Discord"],
+			["Mod Official Discord","discord", 			"Join to our talking!",				"https://discord.gg/tDCmRFtPjv", 							"5165F6"],
 			[""]
 		];
 		
@@ -60,11 +60,11 @@ class CreditsState extends MusicBeatState
 		for (i => credit in creditsStuff)
 		{
 			var isSelectable:Bool = !unselectableCheck(i);
-			var scale:Int = isSelectable ? 30 : 52;
+			var scale:Int = isSelectable ? 35 : 48;
 			var optionText:FlxText = new FlxText(0, 0, 0, credit[0], scale);
 			
 			optionText.setFormat(Paths.font("vcr.ttf"), scale, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			optionText.borderSize = isSelectable ? 3 : 6;
+			optionText.borderSize = isSelectable ? 3 : 4;
 			optionText.antialiasing = true;
 			grpOptions.add(optionText);
 
@@ -94,7 +94,7 @@ class CreditsState extends MusicBeatState
 			}
 		}
 
-		descText = new FlxText(FlxG.width / 2, FlxG.height * 0.5, FlxG.width / 2, "", 36);
+		descText = new FlxText(FlxG.width * 0.55, FlxG.height * 0.5, FlxG.width * 0.365, "", 28);
 		descText.setFormat(Paths.font("pixel-latin.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.borderSize = 4;
 		descText.scrollFactor.set();
@@ -208,8 +208,8 @@ class CreditsState extends MusicBeatState
 		}
 		bigIcon.setGraphicSize(250, 0);
 		bigIcon.updateHitbox();
-		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2 + 50;
-		bigIcon.y = FlxG.height * 0.25 - bigIcon.height / 2 + 100;
+		bigIcon.x = FlxG.width * 0.82 - bigIcon.width / 2;
+		bigIcon.y = FlxG.height * 0.3 - bigIcon.height / 2;
 	}
 
 	#if MODS_ALLOWED
