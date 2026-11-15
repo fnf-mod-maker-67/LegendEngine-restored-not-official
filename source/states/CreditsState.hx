@@ -21,7 +21,7 @@ class CreditsState extends MusicBeatState
 	{
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("크레딧 보는 중", null);
+		DiscordClient.changePresence("In Credits", null);
 		#end
 
 		persistentUpdate = true;
@@ -95,8 +95,9 @@ class CreditsState extends MusicBeatState
 			}
 		}
 
-		descText = new FlxText(FlxG.width / 2, 0, FlxG.width * 0.5, "");
-		descText.setFormat(Paths.font("pixel-latin.ttf"), 25, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		descText = new FlxText(FlxG.width * 0.55, 0, FlxG.width * 0.5, "");
+		descText.x = FlxG.width * 0.75 - descText.width / 2;
+		descText.setFormat(Paths.font("pixel-latin.ttf"), 36, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.borderSize = 4;
 		descText.scrollFactor.set();
 		add(descText);
@@ -187,7 +188,7 @@ class CreditsState extends MusicBeatState
 		bigIcon.loadGraphic(Paths.image('credits/' + name) ?? Paths.image('credits/missing_icon'));
 		bigIcon.setGraphicSize(250, 0);
 		bigIcon.updateHitbox();
-		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2 + 40;
+		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2;
 		bigIcon.y = FlxG.height * 0.3 - bigIcon.height / 2;
 		
 		for (num => item in grpOptions.members)
