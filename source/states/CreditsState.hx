@@ -96,7 +96,7 @@ class CreditsState extends MusicBeatState
 		}
 
 		descText = new FlxText(FlxG.width * 0.55, 0, FlxG.width * 0.5, "");
-		descText.x = FlxG.width * 0.75 - descText.width / 2;
+		descText.x = FlxG.width * 0.75 - descText.width / 2 + 40;
 		descText.setFormat(Paths.font("pixel-latin.ttf"), 36, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.borderSize = 4;
 		descText.scrollFactor.set();
