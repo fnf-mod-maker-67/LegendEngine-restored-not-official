@@ -188,7 +188,7 @@ class CreditsState extends MusicBeatState
 		bigIcon.loadGraphic(Paths.image('credits/' + name) ?? Paths.image('credits/missing_icon'));
 		bigIcon.setGraphicSize(250, 0);
 		bigIcon.updateHitbox();
-		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2;
+		bigIcon.x = FlxG.width * 0.75 - bigIcon.width / 2 + 40;
 		bigIcon.y = FlxG.height * 0.3 - bigIcon.height / 2;
 		
 		for (num => item in grpOptions.members)
