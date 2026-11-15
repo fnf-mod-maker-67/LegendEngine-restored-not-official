@@ -189,8 +189,8 @@ class FreeplayState extends MusicBeatState
 		WeekData.setDirectoryFromWeek();
 
 		scoreText = new FlxText(0, 80, 0, "", 24);
-		scoreText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.YELLOW, CENTER);
-		scoreText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 5);
+		scoreText.setFormat(Paths.font("vcr.ttf"), 30, FlxColor.YELLOW, CENTER);
+		scoreText.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 3);
 		
 		diffText = new FlxText(FlxG.width * 0.7, 5, 0, "", 24);
 		diffText.screenCenter(X);
@@ -445,11 +445,6 @@ class FreeplayState extends MusicBeatState
 			startButton.updateHitbox();
 			startButton.animation.play('idle');
 		}
-
-
-
-
-
 		
 		if (!player.playingMusic)
 		{
