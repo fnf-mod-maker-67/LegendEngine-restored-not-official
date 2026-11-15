@@ -49,8 +49,8 @@ class MainMenuState extends MusicBeatState
 	static var showOutdatedWarning:Bool = true;
 	override function create()
 	{
-		balloonText = new FlxText(730, 170, 530, "", 32);
-		balloonText.setFormat(Paths.font('title.otf'), 32, FlxColor.WHITE, CENTER);
+		balloonText = new FlxText(760, 170, 530, "", 32);
+		balloonText.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, CENTER);
 		balloonText.scrollFactor.set(0, 0);
 		balloonText.antialiasing = ClientPrefs.data.antialiasing;
 
