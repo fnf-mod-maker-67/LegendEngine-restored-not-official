@@ -185,12 +185,12 @@ class TitleState extends MusicBeatState
 		if (newTitle = animFrames.length > 0)
 		{
 			titleText.animation.addByPrefix('idle', "ENTER IDLE", 24);
-			titleText.animation.addByPrefix('press', ClientPrefs.data.flashing ? "ENTER PRESSED" : "ENTER FREEZE", 24);
+			titleText.animation.addByPrefix('press', ClientPrefs.data.flashing ? "ENTER PRESSED" : "ENTER FREEZE", 24, false);
 		}
 		else
 		{
 			titleText.animation.addByPrefix('idle', "Press Enter to Begin", 24);
-			titleText.animation.addByPrefix('press', "ENTER PRESSED", 24);
+			titleText.animation.addByPrefix('press', "ENTER PRESSED", 24, false);
 		}
 		titleText.animation.play('idle');
 		titleText.updateHitbox();
@@ -394,7 +394,7 @@ class TitleState extends MusicBeatState
 				timer = FlxEase.quadInOut(timer);
 			}
 			
-			if(pressedEnter)
+			if(FlxG.mouse.justPressed && FlxG.mouse.overlaps(titleText))
 			{
 				
 				titleText.color = FlxColor.WHITE;
