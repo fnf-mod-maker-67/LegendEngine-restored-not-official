@@ -394,26 +394,22 @@ class TitleState extends MusicBeatState
 				timer = FlxEase.quadInOut(timer);
 			}
 			
-			if(FlxG.mouse.justPressed && FlxG.mouse.overlaps(titleText))
+			if (pressedEnter || (FlxG.mouse.justPressed && FlxG.mouse.overlaps(titleText)))
 			{
-				
 				titleText.color = FlxColor.WHITE;
 				titleText.alpha = 1;
-				
-				if(titleText != null) titleText.animation.play('press');
+				titleText.animation.play('press');
 
 				FlxG.camera.flash(ClientPrefs.data.flashing ? FlxColor.WHITE : 0x4CFFFFFF, 4);
 				FlxG.sound.play(Paths.sound('confirmMenu'), 0.7);
-				
+
 				transitioning = true;
-				// FlxG.sound.music.stop();
 
 				new FlxTimer().start(1, function(tmr:FlxTimer)
 				{
 					MusicBeatState.switchState(new MainMenuState());
 					closedState = true;
 				});
-				// FlxG.sound.play(Paths.music('titleShoot'), 0.7);
 			}
 			#if TITLE_SCREEN_EASTER_EGG
 			else if (FlxG.keys.firstJustPressed() != FlxKey.NONE)
