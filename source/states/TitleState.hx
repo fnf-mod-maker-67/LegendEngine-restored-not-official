@@ -194,7 +194,7 @@ class TitleState extends MusicBeatState
 		}
 		titleText.animation.play('idle');
 		titleText.updateHitbox();
-
+		trace('off=${titleText.frame.offset.x},${titleText.frame.offset.y}');
 		blackScreen = new FlxSprite(0, 0);
 		blackScreen.loadGraphic(Paths.image('credBack'));
 		blackScreen.setGraphicSize(FlxG.width, FlxG.height);
