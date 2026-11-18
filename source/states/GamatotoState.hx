@@ -24,7 +24,7 @@ import flixel.text.FlxText.FlxTextBorderStyle;
 class GamatotoState extends MusicBeatState
 {
 	// 화면에 보이는 지역 이름 / 차트 폴더명 (같은 순서)
-	var adventureNames:Array<String> = ["평화 초원", "쿵후 왕국", "사바의 사막"];
+	var adventureNames:Array<String> = ["Peaceful Plains", "KungFu Kingdom", "Sava's desert"];
 	var chartFolders:Array<String> = ["plains", "kh_kingdom", "savadesert"];
 
 	// 난이도: 차트 접미사 / 번역 키 / 기본 표시 텍스트 / 쿨타임(초)
@@ -49,8 +49,8 @@ class GamatotoState extends MusicBeatState
 
 	override function create()
 	{
-		cropOverlay = false; // 가마토토 화면은 오버레이로 안 자름
-
+		cropOverlay = true; // 가마토토 화면은 오버레이로 안 자름
+		FlxG.sound.playMusic(Paths.music('gamatoto'), 0.7);
 		// 예전에 플레이한 곡의 bpmChangeMap이 static이라 그대로 남아있어서
 		// 메인메뉴 곡 시간이랑 안 맞는 엉뚱한 stepCrochet이 나옴 -> 여기서 초기화
 		Conductor.bpm = 120;
@@ -272,6 +272,7 @@ class GamatotoState extends MusicBeatState
 				else if (controls.BACK)
 				{
 					FlxG.sound.play(Paths.sound('cancelMenu'));
+					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0.7);
 					MusicBeatState.switchState(new MainMenuState());
 				}
 
