@@ -64,10 +64,6 @@ class MainMenuState extends MusicBeatState
 		#end
 		Mods.loadTopMod();
 
-		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("메인메뉴", null);
-		#end
-
 		persistentUpdate = persistentDraw = true;
 
 		// 서브스테이트가 닫히면 메뉴 입력 잠금 해제 (섭스테이트 열고 닫으면 메뉴가 얼어버리는 문제 방지)
