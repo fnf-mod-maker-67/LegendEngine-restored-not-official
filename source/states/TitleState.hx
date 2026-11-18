@@ -395,8 +395,12 @@ class TitleState extends MusicBeatState
 				
 				timer = FlxEase.quadInOut(timer);
 			}
-			
-			if (pressedEnter || (FlxG.mouse.justPressed && FlxG.mouse.overlaps(titleText)))
+			var hitX:Float = titleText.x + titleText.frame.offset.x;
+			var hitY:Float = titleText.y + titleText.frame.offset.y;
+			var clicked:Bool = FlxG.mouse.justPressed
+				&& FlxG.mouse.x >= hitX && FlxG.mouse.x <= hitX + titleText.width
+				&& FlxG.mouse.y >= hitY && FlxG.mouse.y <= hitY + titleText.height;
+			if (pressedEnter || clicked)
 			{
 				titleText.color = FlxColor.WHITE;
 				titleText.alpha = 1;
