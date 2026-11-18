@@ -70,6 +70,7 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
+		GameManager.enterState("TitleState");
 		cropOverlay = false; // 타이틀은 오버레이로 안 자름
 		Paths.clearStoredMemory();
 		super.create();
