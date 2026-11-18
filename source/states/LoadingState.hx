@@ -89,6 +89,7 @@ class LoadingState extends MusicBeatState
 	#end
 	override function create()
 	{
+		GameManager.enterState("LoadingState");
 		persistentUpdate = true;
 		barGroup = new FlxSpriteGroup();
 		add(barGroup);
