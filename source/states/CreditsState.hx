@@ -20,7 +20,6 @@ class CreditsState extends MusicBeatState
 	override function create()
 	{
 		GameManager.enterState("CreditsState");
-		#if DISCORD_ALLOWED
 
 		persistentUpdate = true;
 		bg = new FlxSprite().loadGraphic(Paths.image('Credits'));
