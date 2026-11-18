@@ -19,6 +19,7 @@ class CreditsState extends MusicBeatState
 
 	override function create()
 	{
+		GameManager.enterState("CreditsState");
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In Credits", null);
