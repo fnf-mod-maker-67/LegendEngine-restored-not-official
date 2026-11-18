@@ -221,7 +221,7 @@ class MainMenuState extends MusicBeatState
 	function getIntroTextShit():Array<Array<String>>
 		{
     		#if MODS_ALLOWED
-    		var firstArray:Array<String> = Mods.mergeAllTextsNamed('data/balloonText.txt');
+    		var firstArray:Array<String> = Mods.mergeAllTextsNamed(Language.getFileTranslation('data/balloonText') + '.txt');
     		#else
     		var fullText:String = Assets.getText(Paths.txt('balloonText'));
     		var firstArray:Array<String> = fullText.split('\n');
