@@ -24,6 +24,7 @@ class CharacterSelectState extends MusicBeatState
 
     override function create()
     {
+        GameManager.enterState("CharSelectState");
         FlxG.mouse.visible = true;
         // 1. 배경
         bg = new FlxSprite().loadGraphic(Paths.image('charSelectBG'));
