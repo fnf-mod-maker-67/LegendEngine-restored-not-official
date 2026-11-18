@@ -557,15 +557,15 @@ class TitleState extends MusicBeatState
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 					FlxG.sound.music.fadeIn(4, 0, 0.7);
 				case 2:
-					createCoolText(['프나펑 냥코대전쟁:전설의 시작'], 40);
+					createCoolText([Language.getPhrase('intro_name','FNF The Battle Cats : Legend Begins')], 40);
 				case 4:
-					addMoreText('냥코 유튜버 튜브냥이 제작', 40);
+					addMoreText(Language.getPhrase('intro_whomade','Made by battle cats youtuber Tubenyan'), 40);
 				case 5:
 					deleteCoolText();
 				case 6:
-					createCoolText(['이', '모드는'], -40);
+					createCoolText([Language.getPhrase('intro_this','This'), Language.getPhrase('intro_modis','mod is')], -40);
 				case 8:
-					addMoreText('국산이고', -40);
+					addMoreText(Language.getPhrase('intro_korean','a Korean mod'), -40);
 					ngSpr.visible = true;
 				case 9:
 					deleteCoolText();
@@ -577,11 +577,11 @@ class TitleState extends MusicBeatState
 				case 13:
 					deleteCoolText();
 				case 14:
-					addMoreText('Vs');
+					addMoreText('FNF');
 				case 15:
-					addMoreText('냥코 대전쟁');
+					addMoreText(Language.getPhrase('intro_bc','The battle cats'));
 				case 16:
-					addMoreText(': 전설의 시작'); // credTextShit.text += '\nFunkin';
+					addMoreText(Language.getPhrase('intro_lb',': Legend begins')); // credTextShit.text += '\nFunkin';
 
 				case 17:
 					skipIntro();
