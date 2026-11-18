@@ -94,6 +94,7 @@ class FreeplayState extends MusicBeatState
 	
 	override function create()
 	{
+		GameManager.enterState("FreeplayState");
 		freeplayUIGrp = new FlxSpriteGroup(800, 450); // 하단 오버레이에 안 걸리도록 위로 50px 올림
 		
 		if (FlxG.save.data.selectedSongGroup == null) {
