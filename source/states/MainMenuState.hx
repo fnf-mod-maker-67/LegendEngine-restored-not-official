@@ -128,7 +128,7 @@ class MainMenuState extends MusicBeatState
 		if (leftOption != null)
 		{
 			leftItem = createMenuItem(leftOption, 25, 425);
-			if (Locking.isLocked(leftOption)) leftItem.color = FlxColor.GRAY;a
+			if (Locking.isLocked(leftOption)) leftItem.color = FlxColor.GRAY;
 		}
 		if (rightOption != null)
 		{
