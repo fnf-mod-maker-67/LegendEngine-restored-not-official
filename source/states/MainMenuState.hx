@@ -51,6 +51,7 @@ class MainMenuState extends MusicBeatState
 	static var showOutdatedWarning:Bool = true;
 	override function create()
 	{
+		FlxG.debugger.drawDebug = true;
 		GameManager.enterState("MainMenuState");
 		balloonText = new FlxText(760, 170, 530, "", 32);
 		balloonText.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, CENTER);
@@ -127,7 +128,7 @@ class MainMenuState extends MusicBeatState
 		if (leftOption != null)
 		{
 			leftItem = createMenuItem(leftOption, 25, 425);
-			if (Locking.isLocked(leftOption)) leftItem.color = FlxColor.GRAY;
+			if (Locking.isLocked(leftOption)) leftItem.color = FlxColor.GRAY;a
 		}
 		if (rightOption != null)
 		{
@@ -140,6 +141,7 @@ class MainMenuState extends MusicBeatState
 		}
 
 		menuItems.scale.set(0.75, 0.75);
+		memuItems.updateHitbox();
 		menuItems.y += 40;
 		var idx:Int = 0;
 		for (memb in menuItems)
