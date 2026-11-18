@@ -150,10 +150,10 @@ class MainMenuState extends MusicBeatState
 			memb.updateHitbox();
 			var targetX:Float = memb.x;
 			var targetY:Float = memb.y;
-			memb.x -= 300 + (optionShit.length - idx) * 60; // 위에 있을수록 더 왼쪽에서 시작
+			memb.x -= 500 + (optionShit.length - idx) * 60; // 위에 있을수록 더 왼쪽에서 시작
 			memb.visible = false;
-			FlxTween.tween(memb, {x: targetX, y: targetY}, 1.0, {
-				ease: FlxEase.backIn,
+			FlxTween.tween(memb, {x: targetX, y: targetY}, 2, {
+				ease: FlxEase.backOut,
 				startDelay: idx * 0.12, // 위에서부터 순서대로 등장
 				onStart: function(_) memb.visible = true
 			});
