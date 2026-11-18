@@ -1,3 +1,3 @@
 class GameManager {
-  var curState:String = "";
+  static public var curState:String = "";
 }
