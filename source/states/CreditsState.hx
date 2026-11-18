@@ -21,9 +21,6 @@ class CreditsState extends MusicBeatState
 	{
 		GameManager.enterState("CreditsState");
 		#if DISCORD_ALLOWED
-		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In Credits", null);
-		#end
 
 		persistentUpdate = true;
 		bg = new FlxSprite().loadGraphic(Paths.image('Credits'));
