@@ -12,7 +12,7 @@ class GameManager
 								   "GamatotoState",        "LoadingState",        "MainMenuState","PlayState","TitleState"];
 	static var discordMap:Map<String, Array<String>> = [
 	"AchievementsMenuState" => ["dc_mission", "In Mission Menu"],
-	"CharacterSelectState" 	=> ["dc_charselect", "Selecting Character"],
+	"CharSelectState" 	=> ["dc_charselect", "Selecting Character"],
 	"CreditsState" 			=> ["dc_credits", "Seeing Credits"],
 	"FreeplayState" 		=> ["dc_freeplay", "In Freeplay Menu"],
 	"GamatotoState" 		=> ["dc_gamatoto", "Challenging in Gamatoto"],
