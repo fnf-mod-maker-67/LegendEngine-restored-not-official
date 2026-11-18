@@ -1,3 +1,4 @@
+package backend;
 import backend.Language;
 #if DISCORD_ALLOWED
 import backend.Discord;
