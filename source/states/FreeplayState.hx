@@ -104,9 +104,6 @@ class FreeplayState extends MusicBeatState
 		persistentUpdate = true;
 		PlayState.isStoryMode = false;
 		WeekData.reloadWeekFiles(false);
-		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("프리플레이 메뉴", null);
-		#end
 
 		if(WeekData.weeksList.length < 1)
 		{
