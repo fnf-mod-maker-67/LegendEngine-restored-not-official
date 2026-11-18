@@ -141,7 +141,7 @@ class MainMenuState extends MusicBeatState
 		}
 
 		menuItems.scale.set(0.75, 0.75);
-		memuItems.updateHitbox();
+		menuItems.updateHitbox();
 		menuItems.y += 40;
 		var idx:Int = 0;
 		for (memb in menuItems)
