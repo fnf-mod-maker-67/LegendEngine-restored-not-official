@@ -385,6 +385,8 @@ class TitleState extends MusicBeatState
 
 		if (initialized && !transitioning && skippedIntro)
 		{
+			if (FlxG.mouse.justPressed)
+				trace('클릭 overlap=${FlxG.mouse.overlaps(titleText)} 마우스=${FlxG.mouse.x},${FlxG.mouse.y} 버튼=${titleText.x},${titleText.y},${titleText.width},${titleText.height}');
 			if (newTitle && !pressedEnter)
 			{
 				var timer:Float = titleTimer;
