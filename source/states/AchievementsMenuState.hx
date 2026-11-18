@@ -72,7 +72,7 @@ class AchievementsMenuState extends MusicBeatState
 			}
 			else graphic = Paths.image('achievements/lockedachievement');
 
-			var spr:FlxSprite = new FlxSprite(440, grpOptions.members.length * 180).loadGraphic(graphic);
+			var spr:FlxSprite = new FlxSprite(350, grpOptions.members.length * 180).loadGraphic(graphic);
 			spr.scrollFactor.x = 0;
 			spr.screenCenter(X);
 			spr.x = spr.x - 180;
