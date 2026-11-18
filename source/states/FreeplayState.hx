@@ -448,7 +448,7 @@ class FreeplayState extends MusicBeatState
 		
 		if (!player.playingMusic)
 		{
-			scoreText.text = '내 최고점수 : ' + lerpScore + '\n정확도: ' + ratingSplit.join('.') + '%'+'\n미스: '+misses;
+			scoreText.text = Language.getPhrase('highscore', 'HighScore: ') + lerpScore + Language.getPhrase('accuracy', '\nAccuracy: ') + ratingSplit.join('.') + '%'+Language.getPhrase('miss', '\nMisses: ')+misses;
 			positionHighscore();
 			
 			if(songs.length > 0)
