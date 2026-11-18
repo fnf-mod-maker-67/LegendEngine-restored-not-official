@@ -192,7 +192,14 @@ class MainMenuState extends MusicBeatState
 		}
 		#end
 	}
-
+	function hit(s:FlxSprite):Bool
+	{
+		var hx:Float = s.x + s.frame.offset.x * s.scale.x;
+		var hy:Float = s.y + s.frame.offset.y * s.scale.y;
+		return FlxG.mouse.x >= hx && FlxG.mouse.x <= hx + s.width
+			&& FlxG.mouse.y >= hy && FlxG.mouse.y <= hy + s.height;
+	}
+	
 	function createMenuItem(name:String, x:Float, y:Float):FlxSprite
 	{
 		var menuItem:FlxSprite = new FlxSprite(x, y);
@@ -269,7 +276,7 @@ class MainMenuState extends MusicBeatState
 						selectedItem = downItem;
 				}
 
-				if(leftItem != null && FlxG.mouse.overlaps(leftItem))
+				if(leftItem != null && hit(leftItem))
 				{
 					allowMouse = true;
 					if(selectedItem != leftItem)
@@ -278,7 +285,7 @@ class MainMenuState extends MusicBeatState
 						changeItem();
 					}
 				}
-				else if(rightItem != null && FlxG.mouse.overlaps(rightItem))
+				else if(rightItem != null && hit(rightItem))
 				{
 					allowMouse = true;
 					if(selectedItem != rightItem)
@@ -287,7 +294,7 @@ class MainMenuState extends MusicBeatState
 						changeItem();
 					}
 				}
-				else if(downItem != null && FlxG.mouse.overlaps(downItem))
+				else if(downItem != null && hit(downItem))
 				{
 					allowMouse = true;
 					if(selectedItem != downItem)
@@ -303,7 +310,7 @@ class MainMenuState extends MusicBeatState
 					for (i in 0...optionShit.length)
 					{
 						var memb:FlxSprite = menuItems.members[i];
-						if(FlxG.mouse.overlaps(memb))
+						if(hit(memb))
 						{
 							var distance:Float = Math.sqrt(Math.pow(memb.getGraphicMidpoint().x - FlxG.mouse.screenX, 2) + Math.pow(memb.getGraphicMidpoint().y - FlxG.mouse.screenY, 2));
 							if (dist < 0 || distance < dist)
