@@ -25,9 +25,7 @@ class AchievementsMenuState extends MusicBeatState
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 
-		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("In the Nyanko Mission", null);
-		#end
+		GameManager.enterState("AchievementsMenuState");
 
 		// prepare achievement list
 		for (achievement => data in Achievements.achievements)
