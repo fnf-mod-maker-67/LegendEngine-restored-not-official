@@ -16,6 +16,7 @@ enum MainMenuColumn {
 	LEFT;
 	CENTER;
 	RIGHT;
+	DOWN;
 }
 
 class MainMenuState extends MusicBeatState
@@ -28,24 +29,25 @@ class MainMenuState extends MusicBeatState
 
 	var menuItems:FlxSpriteGroup;
 	var leftItem:FlxSprite;
+	var downItem:FlxSprite;
 	var rightItem:FlxSprite;
 	var balloonText:FlxText;
 	var optionShit:Array<String> = [
 		'story_mode',
 		'freeplay',
-		'gamatoto',
 		#if MODS_ALLOWED 'charselect', #end
 		'credits'
 	];
 
 	var leftOption:String = #if ACHIEVEMENTS_ALLOWED 'mission' #else null #end;
 	var rightOption:String = 'options';
-	
+	var downOption:String = 'gamatoto';
+		
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
-
+		
 	var bg:FlxSprite;
-
+    
 	static var showOutdatedWarning:Bool = true;
 	override function create()
 	{
@@ -113,7 +115,7 @@ class MainMenuState extends MusicBeatState
 		{
 			var item:FlxSprite = createMenuItem(option, 0, (num * 100) + 30);
 			item.ID = num;
-			if (option == 'story_mode' || option == 'freeplay' || option == 'gamatoto' || option == 'charselect' || option == 'credits')
+			if (option == 'story_mode' || option == 'freeplay' || option == 'charselect' || option == 'credits')
 			{
         		item.y -= 15;
     		}
@@ -133,6 +135,11 @@ class MainMenuState extends MusicBeatState
 		if (rightOption != null)
 		{
 			rightItem = createMenuItem(rightOption, 250, 425);
+		}
+		if (downOption != null)
+		{
+			downItem = createMenuItem(downOption, 110, 425);
+			if (Locking.isLocked(downOption)) downItem.color = FlxColor.GRAY;
 		}
 
 		menuItems.scale.set(0.75, 0.75);
@@ -259,6 +266,8 @@ class MainMenuState extends MusicBeatState
 						selectedItem = leftItem;
 					case RIGHT:
 						selectedItem = rightItem;
+					case DOWN:
+						selectedItem = downItem;
 				}
 
 				if(leftItem != null && FlxG.mouse.overlaps(leftItem))
@@ -276,6 +285,15 @@ class MainMenuState extends MusicBeatState
 					if(selectedItem != rightItem)
 					{
 						curColumn = RIGHT;
+						changeItem();
+					}
+				}
+				else if(downItem != null && FlxG.mouse.overlaps(downItem))
+				{
+					allowMouse = true;
+					if(selectedItem != downItem)
+					{
+						curColumn = DOWN;
 						changeItem();
 					}
 				}
@@ -336,7 +354,18 @@ class MainMenuState extends MusicBeatState
 				case RIGHT:
 					if(controls.UI_LEFT_P)
 					{
-						curColumn = CENTER;
+						curColumn = DOWN;
+						changeItem();
+					}
+				case DOWN:
+					if(controls.UI_LEFT_P)
+					{
+						curColumn = LEFT;
+						changeItem();
+					}
+					else if(controls.UI_RIGHT_P)
+					{
+						curColumn = RIGHT;
 						changeItem();
 					}
 			}
@@ -367,6 +396,9 @@ class MainMenuState extends MusicBeatState
 					case RIGHT:
 						option = rightOption;
 						item = rightItem;
+					case DOWN:
+						option = downOption;
+						item = downItem;
 				}
 
 				FlxG.sound.play(Paths.sound('confirmMenu'));
@@ -443,7 +475,7 @@ class MainMenuState extends MusicBeatState
 				{
 					for (memb in menuItems)
 					{
-						if (memb == leftItem || memb == rightItem || optionShit[memb.ID] == 'story_mode') FlxTween.tween(memb, {x: FlxG.width + memb.width + 50}, 2, {ease: FlxEase.circOut});
+						if (memb == downItem || memb == leftItem || memb == rightItem || optionShit[memb.ID] == 'story_mode') FlxTween.tween(memb, {x: FlxG.width + memb.width + 50}, 2, {ease: FlxEase.circOut});
 						else FlxTween.tween(memb, {x: bg.x - memb.width - 50}, 2, {ease: FlxEase.cubeOut});
 					}
 				}
@@ -463,8 +495,22 @@ class MainMenuState extends MusicBeatState
 
 	function changeItem(change:Int = 0)
 	{
-		if(change != 0) curColumn = CENTER;
-		curSelected = FlxMath.wrap(curSelected + change, 0, optionShit.length - 1);
+		if (change != 0)
+		{
+			if (curColumn != CENTER) // 아래 줄에서 ↑↓ → 중간 메뉴로 복귀
+			{
+				curSelected = change > 0 ? 0 : optionShit.length - 1;
+				curColumn = CENTER;
+			}
+			else
+			{
+				var next:Int = curSelected + change;
+				if (next < 0 || next >= optionShit.length)
+					curColumn = LEFT; // 맨 위에서 ↑, 맨 아래에서 ↓ → 아래 줄로
+				else
+					curSelected = next;
+			}
+		}
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 
 		for (item in menuItems)
@@ -482,6 +528,8 @@ class MainMenuState extends MusicBeatState
 				selectedItem = leftItem;
 			case RIGHT:
 				selectedItem = rightItem;
+			case DOWN:
+				selectedItem = downItem;
 		}
 		selectedItem.animation.play('selected');
 		selectedItem.centerOffsets();
