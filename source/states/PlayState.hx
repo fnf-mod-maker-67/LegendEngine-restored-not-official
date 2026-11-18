@@ -272,7 +272,7 @@ class PlayState extends MusicBeatState
 	public static var nextReloadAll:Bool = false;
 	override public function create()
 	{
-		//trace('Playback Rate: ' + playbackRate);
+		GameManager.enterState("PlayState");
 		_lastLoadedModDirectory = Mods.currentModDirectory;
 		Paths.clearStoredMemory();
 		if(nextReloadAll)
