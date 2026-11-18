@@ -127,7 +127,7 @@ class GamatotoState extends MusicBeatState
 		curWindow = new Window('gamatoto/window', 0, true, true);
 		add(curWindow);
 
-		windowTitle = new FlxText(0, 20, 300, name, 28);
+		windowTitle = new FlxText(0, 20, 300, Language.getPhrase('region_' + chartFolders[curAdIndex], name), 28);
 		windowTitle.setFormat(Paths.font("vcr.ttf"), 28, FlxColor.WHITE, CENTER);
 		windowTitle.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 2, 1);
 		curWindow.addItemAt(0, 10, windowTitle);
