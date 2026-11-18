@@ -49,6 +49,7 @@ class GamatotoState extends MusicBeatState
 
 	override function create()
 	{
+		GameManager.enterState("GamatotoState");
 		cropOverlay = true; // 가마토토 화면은 오버레이로 안 자름
 		FlxG.sound.playMusic(Paths.music('gamatoto'), 0.7);
 		// 예전에 플레이한 곡의 bpmChangeMap이 static이라 그대로 남아있어서
