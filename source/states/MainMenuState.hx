@@ -347,7 +347,7 @@ class MainMenuState extends MusicBeatState
 				case LEFT:
 					if(controls.UI_RIGHT_P)
 					{
-						curColumn = CENTER;
+						curColumn = DOWN;
 						changeItem();
 					}
 
