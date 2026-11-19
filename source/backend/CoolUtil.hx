@@ -17,31 +17,30 @@ class CoolUtil
 		}
 	}
 
-	public static function checkForUpdates(url:String = null):String {
+	// 업데이트 확인: 답이 오면 OutdatedSubState.updateVersion에 저장하고 checked = true로 표시한다.
+	// 응답을 기다리지 않고 바로 반환하므로, 타이틀 화면에서 미리 한 번 호출해 두는 용도다.
+	public static function checkForUpdates(url:String = null):Void {
+		if (substates.OutdatedSubState.checkStarted) return; // 한 번만 확인
+		substates.OutdatedSubState.checkStarted = true;
+		if (!ClientPrefs.data.checkForUpdates) return;
+
 		if (url == null || url.length == 0)
 			url = "https://raw.githubusercontent.com/fnf-mod-maker-67/LegendEngine-restored-not-official/main/release.txt";
-		var version:String = states.MainMenuState.psychEngineVersion.trim();
-		if(ClientPrefs.data.checkForUpdates) {
-			trace('checking for updates...');
-			var http = new haxe.Http(url);
-			http.onData = function (data:String)
-			{
-				var newVersion:String = data.split('\n')[0].trim();
-				trace('version online: $newVersion, your version: $version');
-				if(newVersion != version) {
-					trace('versions arent matching! please update');
-					version = newVersion;
-					http.onData = null;
-					http.onError = null;
-					http = null;
-				}
-			}
-			http.onError = function (error) {
-				trace('error: $error');
-			}
-			http.request();
+
+		trace('checking for updates...');
+		var http = new haxe.Http(url);
+		http.onData = function (data:String)
+		{
+			var newVersion:String = data.split('\n')[0].trim();
+			trace('version online: $newVersion, your version: ' + states.MainMenuState.psychEngineVersion);
+			substates.OutdatedSubState.updateVersion = newVersion;
+			substates.OutdatedSubState.checked = true;
 		}
-		return version;
+		http.onError = function (error) {
+			trace('error: $error');
+			// 실패하면 checked가 false로 남아서 알림이 뜨지 않는다
+		}
+		http.request();
 	}
 	inline public static function quantize(f:Float, snap:Float){
 		// changed so this actually works lol

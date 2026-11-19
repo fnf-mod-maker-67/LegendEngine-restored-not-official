@@ -21,7 +21,7 @@ enum MainMenuColumn {
 
 class MainMenuState extends MusicBeatState
 {
-	public static var psychEngineVersion:String = 'Alpha V6';
+	public static var psychEngineVersion:String = 'Alpha V7';
 	public static var curSelected:Int = 0;
 	public static var gamever:String = 'ALPHA 6';
 	public static var curColumn:MainMenuColumn = LEFT;
@@ -184,7 +184,7 @@ class MainMenuState extends MusicBeatState
 		#end
 
 		#if CHECK_FOR_UPDATES
-		if (showOutdatedWarning && ClientPrefs.data.checkForUpdates && substates.OutdatedSubState.updateVersion != psychEngineVersion) {
+		if (showOutdatedWarning && ClientPrefs.data.checkForUpdates && substates.OutdatedSubState.checked && substates.OutdatedSubState.updateVersion != psychEngineVersion) {
 			persistentUpdate = false;
 			showOutdatedWarning = false;
 			openSubState(new substates.OutdatedSubState());
