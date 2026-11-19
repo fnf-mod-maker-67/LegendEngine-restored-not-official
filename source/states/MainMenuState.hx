@@ -194,10 +194,12 @@ class MainMenuState extends MusicBeatState
 	}
 	function hit(s:FlxSprite):Bool
 	{
-		var hx:Float = s.x + s.frame.offset.x * s.scale.x;
-		var hy:Float = s.y + s.frame.offset.y * s.scale.y;
-		return FlxG.mouse.x >= hx && FlxG.mouse.x <= hx + s.width
-			&& FlxG.mouse.y >= hy && FlxG.mouse.y <= hy + s.height;
+		var hx:Float = s.x - s.offset.x + s.origin.x * (1 - s.scale.x) + s.frame.offset.x * s.scale.x;
+		var hy:Float = s.y - s.offset.y + s.origin.y * (1 - s.scale.y) + s.frame.offset.y * s.scale.y;
+		var hw:Float = s.frame.frame.width * s.scale.x;
+		var hh:Float = s.frame.frame.height * s.scale.y;
+		return FlxG.mouse.x >= hx && FlxG.mouse.x <= hx + hw
+		&& FlxG.mouse.y >= hy && FlxG.mouse.y <= hy + hh;
 	}
 	
 	function createMenuItem(name:String, x:Float, y:Float):FlxSprite
