@@ -51,7 +51,6 @@ class MainMenuState extends MusicBeatState
 	static var showOutdatedWarning:Bool = true;
 	override function create()
 	{
-		FlxG.debugger.drawDebug = true;
 		GameManager.enterState("MainMenuState");
 		balloonText = new FlxText(760, 170, 530, "", 32);
 		balloonText.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, CENTER);
