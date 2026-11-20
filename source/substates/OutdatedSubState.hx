@@ -46,7 +46,7 @@ class OutdatedSubState extends MusicBeatSubstate
 		if(!leftState) {
 			if (controls.ACCEPT) {
 				leftState = true;
-				CoolUtil.browserLoad("https://github.com/fnf-mod-maker-67/fnf-battle-cats-legend-begins");
+				CoolUtil.browserLoad("https://github.com/fnf-mod-maker-67/LegendEngine-restored-not-official/releases");
 			}
 			else if(controls.BACK) {
 				leftState = true;
