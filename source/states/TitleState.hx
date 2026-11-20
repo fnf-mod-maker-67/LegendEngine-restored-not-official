@@ -118,7 +118,7 @@ class TitleState extends MusicBeatState
 			FlxTransitionableState.skipNextTransOut = true;
 			MusicBeatState.switchState(new FlashingState());
 		}
-		else if (FlxG.save.data.resumeSong != null)
+		else if (Reflect.field(FlxG.save.data, 'continue') != null)
 		{
 			// 이어하기 기록이 있음: 인트로 전에 물어봄 (Enter 이어하기 / Esc 버리기)
 			persistentUpdate = false;
@@ -126,7 +126,8 @@ class TitleState extends MusicBeatState
 				Language.getPhrase('resume_ask', 'There is a game that was force-closed!\nPress Enter to continue, Esc to discard.'),
 				function() resumeStory(),
 				function() {
-					FlxG.save.data.resumeSong = null;
+					Reflect.setField(FlxG.save.data, 'continue', null);
+					Reflect.setField(FlxG.save.data, 'continueDiff', null);
 					FlxG.save.flush();
 					closeSubState();
 					persistentUpdate = true;
@@ -343,11 +344,12 @@ class TitleState extends MusicBeatState
 	// 엔딩윈에서 저장한 다음 곡으로 바로 스토리 모드 진입 (통솔력은 다시 안 뺀다)
 	function resumeStory():Void
 	{
-		var next:String = FlxG.save.data.resumeSong;
+		var next:String = Reflect.field(FlxG.save.data, 'continue');
 
 		PlayState.storyPlaylist = [next];
 		PlayState.isStoryMode = true;
-		PlayState.storyDifficulty = FlxG.save.data.resumeDiff != null ? FlxG.save.data.resumeDiff : 0;
+		var savedDiff:Dynamic = Reflect.field(FlxG.save.data, 'continueDiff');
+		PlayState.storyDifficulty = savedDiff != null ? savedDiff : 0;
 		PlayState.campaignScore = 0;
 		PlayState.campaignMisses = 0;
 		PlayState.pendingEnergyCost = 0;
