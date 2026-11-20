@@ -255,7 +255,7 @@ class TitleState extends MusicBeatState
 
 		// credGroup.add(credTextShit);
 	}
-
+	
 	// JSON data
 	var characterImage:String = 'gfDanceTitle';
 	var animationName:String = 'gfDance';
@@ -345,10 +345,15 @@ class TitleState extends MusicBeatState
 	function resumeStory():Void
 	{
 		var next:String = Reflect.field(FlxG.save.data, 'continue');
+		var savedDiff:Dynamic = Reflect.field(FlxG.save.data, 'continueDiff');
+		var week:Dynamic = Reflect.field(FlxG.save.data, 'continueWeek');
+
+		WeekData.reloadWeekFiles(true);                       // 주차 목록 불러오기 (타이틀에선 비어 있음)
+		PlayState.storyWeek = week != null ? week : 0;        // 곡이 속한 주차
+		Difficulty.loadFromWeek();                            // 난이도 목록 채우기
 
 		PlayState.storyPlaylist = [next];
 		PlayState.isStoryMode = true;
-		var savedDiff:Dynamic = Reflect.field(FlxG.save.data, 'continueDiff');
 		PlayState.storyDifficulty = savedDiff != null ? savedDiff : 0;
 		PlayState.campaignScore = 0;
 		PlayState.campaignMisses = 0;
@@ -361,6 +366,7 @@ class TitleState extends MusicBeatState
 		LoadingState.prepareToSong();
 		LoadingState.loadAndSwitchState(new PlayState(), true);
 	}
+
 
 	function getIntroTextShit():Array<Array<String>>
 	{
