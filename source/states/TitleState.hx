@@ -118,6 +118,21 @@ class TitleState extends MusicBeatState
 			FlxTransitionableState.skipNextTransOut = true;
 			MusicBeatState.switchState(new FlashingState());
 		}
+		else if (FlxG.save.data.resumeSong != null)
+		{
+			// 이어하기 기록이 있음: 인트로 전에 물어봄 (Enter 이어하기 / Esc 버리기)
+			persistentUpdate = false;
+			openSubState(new substates.ErrorSubstate(
+				Language.getPhrase('resume_ask', 'There is a game that was force-closed!\nPress Enter to continue, Esc to discard.'),
+				function() resumeStory(),
+				function() {
+					FlxG.save.data.resumeSong = null;
+					FlxG.save.flush();
+					closeSubState();
+					persistentUpdate = true;
+					startIntro();
+				}));
+		}
 		else
 			startIntro();
 		#end
@@ -323,6 +338,26 @@ class TitleState extends MusicBeatState
 				danceLeftFrames = [29, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 				danceRightFrames = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28];
 		}
+	}
+
+	// 엔딩윈에서 저장한 다음 곡으로 바로 스토리 모드 진입 (통솔력은 다시 안 뺀다)
+	function resumeStory():Void
+	{
+		var next:String = FlxG.save.data.resumeSong;
+
+		PlayState.storyPlaylist = [next];
+		PlayState.isStoryMode = true;
+		PlayState.storyDifficulty = FlxG.save.data.resumeDiff != null ? FlxG.save.data.resumeDiff : 0;
+		PlayState.campaignScore = 0;
+		PlayState.campaignMisses = 0;
+		PlayState.pendingEnergyCost = 0;
+
+		var diffic:String = Difficulty.getFilePath(PlayState.storyDifficulty);
+		if (diffic == null) diffic = '';
+
+		backend.Song.loadFromJson(next.toLowerCase() + diffic, next.toLowerCase());
+		LoadingState.prepareToSong();
+		LoadingState.loadAndSwitchState(new PlayState(), true);
 	}
 
 	function getIntroTextShit():Array<Array<String>>
