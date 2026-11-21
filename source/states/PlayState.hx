@@ -2489,7 +2489,7 @@ class PlayState extends MusicBeatState
 
 				if (storyPlaylist.length <= 0)
 				{
-					FlxG.save.data.continue = null;
+					FlxG.save.data.continueSong = null;
 					FlxG.save.data.continueDiff = null;
 					FlxG.save.data.continueWeek = null;
 					FlxG.save.flush();
