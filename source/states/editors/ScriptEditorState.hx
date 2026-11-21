@@ -36,7 +36,7 @@ class ScriptEditorState extends MusicBeatState {
         for (rawItem in scriptList) {
             var items:FlxSpriteGroup = new FlxSpriteGroup(0,0);
             var icon:FlxSprite = new FlxSprite(0,0);
-            var iconPath:FlxSprite = Paths.image('scriptEditor/icon/'+rawItem.name);
+            var iconPath:FlxGraphic = Paths.image('scriptEditor/icon/'+rawItem.name);
             icon.loadGraphic(Paths.image('scriptEditor/placeholder'));
             if (Paths.fileExists("scriptEditor/icon/"+rawItem.name, IMAGE))
                 icon.loadGraphic(iconPath);
