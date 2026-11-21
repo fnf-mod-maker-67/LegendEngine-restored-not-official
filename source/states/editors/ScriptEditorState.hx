@@ -7,7 +7,7 @@ typedef Script = {
     var detail:String;
 }
 
-class ScriptEditor extends MusicBeatState {
+class ScriptEditorState extends MusicBeatState {
     var fileList:Array<String>;
     var scriptList:Array<Script>;
 
