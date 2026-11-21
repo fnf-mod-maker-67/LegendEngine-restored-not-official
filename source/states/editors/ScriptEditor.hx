@@ -10,8 +10,23 @@ typedef Script = {
 class ScriptEditor extends MusicBeatState {
     var fileList:Array<String>;
     var scriptList:Array<Script>;
+
+    var listBox:LegendUIBox;
     
-    function create() {
+    override function create() {
+        reload();
+
+        var bg:FlxSprite = new FlxSprite(0, 0);
+        bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.GRAY);
+        add(bg);
+
+        var listBox:FlxSprite = new FlxSprite(50, 40);
+        listBox.makeGraphic(400, 680, 0xFF87CEEB);
+        add(listBox);
+    }
+
+    function reload() {
+        fileList = [];
         scriptList = [];
         fileList = FileSystem.readDirectory(Paths.getPath('scripts',null,null,true));
         for (i in fileList.copy()) {
