@@ -22,7 +22,7 @@ import haxe.Json;
 
 import cutscenes.DialogueBoxLegend;
 
-import states.StoryMenuState;
+import states.MainMenuState;
 import states.FreeplayState;
 import states.editors.ChartingState;
 import states.editors.CharacterEditorState;
@@ -2489,10 +2489,6 @@ class PlayState extends MusicBeatState
 
 				if (storyPlaylist.length <= 0)
 				{
-					FlxG.save.data.continueSong = null;
-					FlxG.save.data.continueDiff = null;
-					FlxG.save.data.continueWeek = null;
-					FlxG.save.flush();
 					Mods.loadTopMod();
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
