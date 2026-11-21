@@ -6,7 +6,8 @@ import backend.Song;
 
 import flixel.util.FlxStringUtil;
 
-import states.StoryMenuState;
+import states.MainMenuState;
+
 import states.FreeplayState;
 import options.OptionsState;
 
