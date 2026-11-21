@@ -2429,11 +2429,7 @@ class PlayState extends MusicBeatState
 
 	public var transitioning = false;
 	public function endSong()
-	{
-		if (SONG.song.toLowerCase() == 'nyan'){
-    		Achievements.unlock('nyan');
-		}
-		//Should kill you if you tried to cheat
+	{   //Should kill you if you tried to cheat
 		if(!startingSong)
 		{
 			notes.forEachAlive(function(daNote:Note)
@@ -2493,12 +2489,15 @@ class PlayState extends MusicBeatState
 
 				if (storyPlaylist.length <= 0)
 				{
+					FlxG.save.data.continue = null;
+					FlxG.save.data.continueDiff = null;
+					FlxG.save.flush();
 					Mods.loadTopMod();
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 
 					canResync = false;
-					MusicBeatState.switchState(new StoryMenuState());
+					MusicBeatState.switchState(new MainMenuState());
 
 					// if ()
 					if(!ClientPrefs.getGameplaySetting('practice') && !ClientPrefs.getGameplaySetting('botplay')) {
