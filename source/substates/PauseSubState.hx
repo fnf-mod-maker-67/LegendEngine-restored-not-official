@@ -323,6 +323,7 @@ class PauseSubState extends MusicBeatSubstate
 
 					FlxG.save.data.continue = null;
 					FlxG.save.data.continueDiff = null;
+					FlxG.save.data.continueWeek = null;
 					FlxG.save.flush();
 
 					PlayState.instance.canResync = false;
