@@ -1,3 +1,5 @@
+package states.editors;
+
 import backend.Paths;
 
 typedef Script = {
