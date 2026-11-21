@@ -118,7 +118,7 @@ class TitleState extends MusicBeatState
 			FlxTransitionableState.skipNextTransOut = true;
 			MusicBeatState.switchState(new FlashingState());
 		}
-		else if (Reflect.field(FlxG.save.data, 'continue') != null)
+		else if (Reflect.field(FlxG.save.data, 'continueSong') != null)
 		{
 			// 이어하기 기록이 있음: 인트로 전에 물어봄 (Enter 이어하기 / Esc 버리기)
 			persistentUpdate = false;
@@ -126,7 +126,7 @@ class TitleState extends MusicBeatState
 				Language.getPhrase('resume_ask', 'There is a game that was force-closed!\nPress Enter to continue, Esc to discard.'),
 				function() resumeStory(),
 				function() {
-					Reflect.setField(FlxG.save.data, 'continue', null);
+					Reflect.setField(FlxG.save.data, 'continueSong', null);
 					Reflect.setField(FlxG.save.data, 'continueDiff', null);
 					FlxG.save.flush();
 					closeSubState();
