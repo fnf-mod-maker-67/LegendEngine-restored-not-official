@@ -2,6 +2,7 @@ package states.editors;
 
 import backend.Paths;
 import sys.FileSystem;
+import flixel.graphics.FlxGraphic;
 
 typedef Script = {
     var isLua:String;
