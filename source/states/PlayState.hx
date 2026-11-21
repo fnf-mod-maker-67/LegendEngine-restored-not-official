@@ -2491,6 +2491,7 @@ class PlayState extends MusicBeatState
 				{
 					FlxG.save.data.continue = null;
 					FlxG.save.data.continueDiff = null;
+					FlxG.save.data.continueWeek = null;
 					FlxG.save.flush();
 					Mods.loadTopMod();
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
