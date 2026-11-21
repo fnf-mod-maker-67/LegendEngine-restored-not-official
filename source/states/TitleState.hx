@@ -363,6 +363,8 @@ class TitleState extends MusicBeatState
 		if (diffic == null) diffic = '';
 
 		backend.Song.loadFromJson(next.toLowerCase() + diffic, next.toLowerCase());
+		if (FlxG.sound.music == null)
+			FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 		LoadingState.prepareToSong();
 		LoadingState.loadAndSwitchState(new PlayState(), true);
 	}
