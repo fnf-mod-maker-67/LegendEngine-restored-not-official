@@ -321,10 +321,14 @@ class PauseSubState extends MusicBeatSubstate
 					PlayState.deathCounter = 0;
 					PlayState.seenCutscene = false;
 
+					FlxG.save.data.continue = null;
+					FlxG.save.data.continueDiff = null;
+					FlxG.save.flush();
+
 					PlayState.instance.canResync = false;
 					Mods.loadTopMod();
 					if(PlayState.isStoryMode)
-						MusicBeatState.switchState(new StoryMenuState());
+						MusicBeatState.switchState(new MainMenuState());
 					else 
 						MusicBeatState.switchState(new FreeplayState());
 
