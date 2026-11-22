@@ -579,7 +579,6 @@ class LegendScript extends FlxSpriteGroup
 
 	override public function destroy()
 	{
-		_boundaries = null;
 		if(focusOn == this) focusOn = null;
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		super.destroy();
@@ -643,30 +642,20 @@ class LegendScript extends FlxSpriteGroup
 		return passwordMask;
 	}
 
-	var _boundaries:Array<Float> = [];
 	function set_text(v:String)
 	{
-		for (i in 0..._boundaries.length) _boundaries.pop();
 		v = filter(v);
 
-		textObj.text = '';
+		var shown:String = '';
 		if(v != null && v.length > 0)
 		{
-			if(v.length > 1)
-			{
-				for (i in 0...v.length)
-				{
-					var toPrint:String = v.substr(i, 1);
-					textObj.textField.appendText(!passwordMask ? toPrint : '*');
-					_boundaries.push(textObj.textField.textWidth);
-				}
-			}
+			if(!passwordMask) shown = v;
 			else
 			{
-				textObj.text = !passwordMask ? v : '*';
-				_boundaries.push(textObj.textField.textWidth);
+				for(k in 0...v.length) shown += (v.charAt(k) == '\n') ? '\n' : '*';
 			}
 		}
+		if(textObj.text != shown) textObj.text = shown;
 		text = v;
 		var wantH:Float = textObj.height + 2;
 		if(Math.abs(bg.height - wantH) > 0.5)
