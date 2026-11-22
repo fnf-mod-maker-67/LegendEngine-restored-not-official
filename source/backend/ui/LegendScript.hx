@@ -76,9 +76,9 @@ class LegendScript extends FlxSpriteGroup
 
 		this.textObj.color = FlxColor.BLACK;
 		this.textObj.textField.selectable = false;
-		this.textObj.textField.wordWrap = false;
+		this.textObj.textField.wordWrap = true;
 		this.textObj.textField.multiline = true;
-		this.selection.color = FlxColor.BLUE;
+		this.selection.color = FlxColor.GRAY;
 
 		@:bypassAccessor fieldWidth = wid;
 		setGraphicSize(wid + 2, this.textObj.height + 2);
@@ -375,8 +375,14 @@ class LegendScript extends FlxSpriteGroup
 		updateCaret();
 	}
 
-	public dynamic function onPressEnter(e:KeyboardEvent)
-		focusOn = null;
+	public dynamic function onPressEnter(e:KeyboardEvent) {
+		if(selectIndex > -1 && selectIndex != caretIndex)
+			deleteSelection();
+	
+		var pos:Int = caretIndex < 0 ? 0 : caretIndex;
+		text = text.substr(0, pos) + '\n' + text.substr(pos);
+		caretIndex = pos + 1;
+	}
 
 	public var unfocus:Void->Void;
 	public static function set_focusOn(v:LegendScript)
@@ -617,7 +623,6 @@ class LegendScript extends FlxSpriteGroup
 				for (i in 0...v.length)
 				{
 					var toPrint:String = v.substr(i, 1);
-					if(toPrint == '\n') toPrint = ' ';
 					textObj.textField.appendText(!passwordMask ? toPrint : '*');
 					_boundaries.push(textObj.textField.textWidth);
 				}
