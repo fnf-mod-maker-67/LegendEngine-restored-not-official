@@ -51,7 +51,7 @@ class LegendScript extends FlxSpriteGroup
 		add(this.textObj);
 		add(this.caret);
 
-		this.textObj.color = FlxColor.BLACK;
+		this.textObj.setFormat(Paths.font("vcr.ttf"), size, FlxColor.BLACK, LEFT);
 		this.textObj.textField.selectable = false;
 		this.textObj.textField.wordWrap = true;
 		this.textObj.textField.multiline = true;
@@ -405,8 +405,8 @@ class LegendScript extends FlxSpriteGroup
 		var i:Int = Std.int(Math.max(0, Math.min(text.length - 1, idx)));
 		var ln:Int = tf.getLineIndexOfChar(i);
 		if(ln < 0) ln = getLineNumber(idx);
-		// 맨 끝이 개행 뒤라면 한 줄 더 내려간다
-		if(idx >= text.length && text.charAt(text.length - 1) == '\n') ln++;
+		// 맨 끝이 개행 뒤라면 표시용 공백이 있는 마지막 줄
+		if(idx >= text.length && text.charAt(text.length - 1) == '\n') ln = Std.int(Math.max(0, tf.numLines - 1));
 		return ln;
 	}
 
@@ -706,6 +706,8 @@ class LegendScript extends FlxSpriteGroup
 				for(k in 0...v.length) shown += (v.charAt(k) == '\n') ? '\n' : '*';
 			}
 		}
+		// openfl은 끝이 개행이면 그 뒤 빈 줄을 numLines에 안 센다 -> 표시용으로만 공백 1칸을 붙여 줄을 확보
+		if(shown.length > 0 && shown.charAt(shown.length - 1) == '\n') shown += ' ';
 		if(textObj.text != shown) textObj.text = shown;
 		text = v;
 		var wantH:Float = textObj.textField.textHeight + GUTTER * 2 + 2;
