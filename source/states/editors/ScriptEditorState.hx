@@ -30,11 +30,12 @@ class ScriptEditorState extends MusicBeatState {
     var scriptInput:LegendScript;
     
     override function create() {
+		cropOverlay = false;
         super.create();
         
         reload();
 
-        cropOverlay = false;
+		FlxG.mouse.visible = true;
         
         bg = new FlxSprite(0, 0);
         bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.GRAY);
@@ -98,6 +99,12 @@ class ScriptEditorState extends MusicBeatState {
             if (controls.UI_UP_P) changeSelect(-1);
             if (controls.BACK) MusicBeatState.switchState(new MasterEditorMenu());
         }
+		if (FlxG.mouse.justPressed && FlxG.mouse.overlaps(listSprite, listCam)) {
+			LegendScript.focusOn = null;
+		}
+		if (FlxG.mouse.justPressed && FlxG.mouse.overlaps(scriptInput)) {
+			LegendScript.focusOn = scriptInput;
+		}
         super.update(elapsed);
     }
 
