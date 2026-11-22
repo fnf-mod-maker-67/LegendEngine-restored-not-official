@@ -253,12 +253,36 @@ class LegendScript extends FlxSpriteGroup
 			case HOME: //move caret to the begin
 				if(!FlxG.keys.pressed.SHIFT) selectIndex = -1;
 				else if(selectIndex == -1) selectIndex = caretIndex;
-				caretIndex = 0;
+				caretIndex = getLineStart(caretIndex);
 
 			case END: //move caret to the end
 				if(!FlxG.keys.pressed.SHIFT) selectIndex = -1;
 				else if(selectIndex == -1) selectIndex = caretIndex;
-				caretIndex = text.length;
+				caretIndex = getLineEnd(caretIndex);
+
+			case UP:
+				if(!FlxG.keys.pressed.SHIFT) selectIndex = -1;
+				else if(selectIndex == -1) selectIndex = caretIndex;
+				var curStart:Int = getLineStart(caretIndex);
+				if(curStart > 0)
+				{
+					var col:Int = caretIndex - curStart;
+					var prevEnd:Int = curStart - 1;
+					var prevStart:Int = getLineStart(prevEnd);
+					caretIndex = prevStart + Std.int(Math.min(col, prevEnd - prevStart));
+				}
+
+			case DOWN:
+				if(!FlxG.keys.pressed.SHIFT) selectIndex = -1;
+				else if(selectIndex == -1) selectIndex = caretIndex;
+				var nl:Int = text.indexOf('\n', caretIndex);
+				if(nl != -1)
+				{
+					var col2:Int = caretIndex - getLineStart(caretIndex);
+					var nextStart:Int = nl + 1;
+					var nextEnd:Int = getLineEnd(nextStart);
+					caretIndex = nextStart + Std.int(Math.min(col2, nextEnd - nextStart));
+				}
 
 			case INSERT: //change to insert mode
 				inInsertMode = !inInsertMode;
@@ -375,6 +399,39 @@ class LegendScript extends FlxSpriteGroup
 		updateCaret();
 	}
 
+	// ---- 줄 단위 계산 헬퍼 ----
+	function getLineStart(idx:Int):Int
+	{
+		if(idx <= 0) return 0;
+		return text.lastIndexOf('\n', idx - 1) + 1;
+	}
+
+	function getLineEnd(idx:Int):Int
+	{
+		var e:Int = text.indexOf('\n', idx);
+		return e == -1 ? text.length : e;
+	}
+
+	function getLineNumber(idx:Int):Int
+	{
+		var n:Int = 0;
+		for(i in 0...idx) if(text.charAt(i) == '\n') n++;
+		return n;
+	}
+
+	function getLineHeight():Float
+		return textObj.textField.textHeight / Math.max(1, getLineNumber(text.length) + 1);
+
+	// lineStart 줄에서 idx 글자 앞까지의 가로 폭
+	function getXInLine(lineStart:Int, idx:Int):Float
+	{
+		if(idx <= lineStart) return 0;
+		var tf = textObj.textField;
+		var a = tf.getCharBoundaries(lineStart);
+		var b = tf.getCharBoundaries(idx - 1);
+		return (a != null && b != null) ? b.x + b.width - a.x : 0;
+	}
+
 	public dynamic function onPressEnter(e:KeyboardEvent) {
 		if(selectIndex > -1 && selectIndex != caretIndex)
 			deleteSelection();
@@ -407,19 +464,26 @@ class LegendScript extends FlxSpriteGroup
 				else if(selectIndex == -1) selectIndex = caretIndex;
 				focusOn = this;
 				caretIndex = 0;
-				var lastBound:Float = 0;
 				var textObjX:Float = textObj.getScreenPosition(camera).x;
+				var textObjY:Float = textObj.getScreenPosition(camera).y;
 				var mousePosX:Float = FlxG.mouse.getScreenPosition(camera).x;
-				var txtX:Float = textObjX - textObj.textField.scrollH;
+				var mousePosY:Float = FlxG.mouse.getScreenPosition(camera).y;
 
-				for (i => bound in _boundaries)
+				var lines:Int = getLineNumber(text.length) + 1;
+				var lh:Float = getLineHeight();
+				var ln:Int = Std.int(Math.max(0, Math.min(lines - 1, (mousePosY - textObjY) / lh)));
+
+				var start:Int = 0;
+				for(k in 0...ln) start = text.indexOf('\n', start) + 1;
+				var end:Int = getLineEnd(start);
+
+				caretIndex = start;
+				var relX:Float = mousePosX - (textObjX - textObj.textField.scrollH);
+				for(c in start...end)
 				{
-					if(mousePosX >= txtX + (bound - lastBound)/2)
-					{
-						caretIndex = i+1;
-						txtX += bound - lastBound;
-						lastBound = bound;
-					}
+					var prevW:Float = getXInLine(start, c);
+					var w:Float = getXInLine(start, c + 1);
+					if(relX >= prevW + (w - prevW) / 2) caretIndex = c + 1;
 					else break;
 				}
 				updateCaret();
@@ -480,47 +544,40 @@ class LegendScript extends FlxSpriteGroup
 		var textField = textObj.textField;
 		textField.setSelection(caretIndex, caretIndex);
 		_caretTime = 0;
+
+		var lh:Float = getLineHeight();
 		if(caret != null && caret.exists)
 		{
-			caret.y = textObj.y + 2;
-			caret.x = textObj.x + 1 - textObj.textField.scrollH;
-			if(caretIndex > 0)
-				caret.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, caretIndex-1)))];
+			caret.y = textObj.y + 2 + getLineNumber(caretIndex) * lh;
+			caret.x = textObj.x + 1 - textField.scrollH + getXInLine(getLineStart(caretIndex), caretIndex);
 		}
-		
+
 		if(selection != null && selection.exists)
 		{
-			selection.y = textObj.y + 2;
-			selection.x = textObj.x + 1 - textObj.textField.scrollH;
-			if(selectIndex > 0)
-				selection.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, selectIndex-1)))];
-
-			selection.scale.y = textField.textHeight;
-			selection.scale.x = caret.x - selection.x;
-			if(selection.scale.x < 0)
+			// 같은 줄 안의 선택만 하이라이트 (여러 줄에 걸치면 글자 색 포맷만 적용)
+			var sameLine:Bool = selectIndex > -1 && selectIndex != caretIndex && getLineNumber(selectIndex) == getLineNumber(caretIndex);
+			if(sameLine)
 			{
-				selection.scale.x = Math.abs(selection.scale.x);
-				selection.x -= selection.scale.x;
+				var ls:Int = getLineStart(caretIndex);
+				var x1:Float = getXInLine(ls, caretIndex);
+				var x2:Float = getXInLine(ls, selectIndex);
+				selection.x = textObj.x + 1 - textField.scrollH + Math.min(x1, x2);
+				selection.y = textObj.y + 2 + getLineNumber(caretIndex) * lh;
+				selection.scale.y = lh;
+				selection.scale.x = Math.abs(x1 - x2);
+				selection.updateHitbox();
 			}
-
-			if(selection.x < textObj.x)
+			else
 			{
-				var diff:Float = textObj.x - selection.x;
-				selection.x += diff;
-				selection.scale.x -= diff;
+				selection.scale.x = 0;
+				selection.updateHitbox();
 			}
-			if(selection.x + selection.scale.x > textObj.x + textObj.width)
-				selection.scale.x += (textObj.x + textObj.width - selection.x - selection.scale.x);
-
-			selection.updateHitbox();
 
 			if(text.length > 0)
 			{
 				textObj.removeFormat(selectedFormat);
 				if(selectIndex != -1 && selectIndex != caretIndex)
-				{
-					textObj.addFormat(selectedFormat, caretIndex < selectIndex ? caretIndex : selectIndex, caretIndex < selectIndex ? selectIndex : caretIndex);
-				}
+					textObj.addFormat(selectedFormat, Std.int(Math.min(caretIndex, selectIndex)), Std.int(Math.max(caretIndex, selectIndex)));
 			}
 		}
 		else if(text.length > 0) textObj.removeFormat(selectedFormat);
