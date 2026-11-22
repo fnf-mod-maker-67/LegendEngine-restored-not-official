@@ -3,6 +3,7 @@ package states.editors;
 import backend.Paths;
 import sys.FileSystem;
 import flixel.graphics.FlxGraphic;
+import backend.ui.LegendScript;
 
 typedef Script = {
     var isLua:String;
@@ -25,9 +26,12 @@ class ScriptEditorState extends MusicBeatState {
     var selectSprite:FlxSprite;
 
     var listCam:FlxCamera;
+
+    var scriptInput:LegendScript;
     
     override function create() {
         super.create();
+        
         reload();
 
         cropOverlay = false;
@@ -37,7 +41,7 @@ class ScriptEditorState extends MusicBeatState {
         add(bg);
 
         listBox = new FlxSprite(50, 40);
-        listBox.makeGraphic(400, 680, 0xFF87CEEB);
+        listBox.makeGraphic(400, 600, 0xFF87CEEB);
         add(listBox);
 
         listSprite = new FlxSpriteGroup(0,0);
@@ -80,10 +84,14 @@ class ScriptEditorState extends MusicBeatState {
         FlxG.cameras.add(listCam, false);
         listSprite.cameras = [listCam];
         selectSprite.cameras = [listCam];  
+
+        scriptInput = new LegendScript(listBox.x + listBox.width + 50, listBox.y, 400, '', 20);
+        add(scriptInput);
         
         changeSelect(0);        
     }
     override function update(elapsed:Float) {
+        isTyping = LegendScript.focusOn != null;
         if (!isTyping) {
             selectSprite.visible = true;
             if (controls.UI_DOWN_P) changeSelect(1);
@@ -107,6 +115,17 @@ class ScriptEditorState extends MusicBeatState {
         selectSprite.y = item.y;
 
         listCam.scroll.y = curSelected * item.height + 10;
+        scriptInput.text = scriptList[curSelected].detail;
+    }
+
+    public function UIEvent(id:String, sender:Dynamic)
+    {
+	    if (id == LegendScript.CHANGE_EVENT && sender == scriptInput)
+		    scriptList[curSelected].detail = scriptInput.text;
+    }
+
+    function save(name:String) {
+        FileSystem.saveContent(Paths.modFolders(scriptList[curSelected].path), scriptList[curSelected].detail);
     }
     
     function reload() {
