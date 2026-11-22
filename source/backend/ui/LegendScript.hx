@@ -668,6 +668,12 @@ class LegendScript extends FlxSpriteGroup
 			}
 		}
 		text = v;
+		var wantH:Float = textObj.height + 2;
+		if(Math.abs(bg.height - wantH) > 0.5)
+		{
+			setGraphicSize(fieldWidth + 2, wantH);
+			updateHitbox();
+		}
 		updateCaret();
 		return v;
 	}
