@@ -23,10 +23,12 @@ class ScriptEditorState extends MusicBeatState {
     var listSprite:FlxSpriteGroup;
 
     var selectSprite:FlxSprite;
+
+    var listCam:FlxCamera;
     
     override function create() {
         reload();
-
+        
         bg = new FlxSprite(0, 0);
         bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.GRAY);
         add(bg);
@@ -55,25 +57,29 @@ class ScriptEditorState extends MusicBeatState {
                 luaHx.loadGraphic(Paths.image('scriptEditor/other'));
             luaHx.y = icon.y + icon.height - luaHx.height;
             
-            var txt:FlxText = new FlxText(icon.x + icon.width + 10, 0, 380, rawItem.name, 36);
-            txt.setFormat(Paths.font("vcr.ttf"), 36, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+            var txt:FlxText = new FlxText(icon.x + icon.width, 0, 380, rawItem.name, 36);
+            txt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
             txt.borderSize = 2;
             
             items.add(icon);
             items.add(luaHx);
             items.add(txt);
             items.x = listBox.x;
-            items.y = listBox.y + i * (icon.height + 10);
+            items.y = i * (icon.height + 10);
             listSprite.add(items);
             i++;
         }
         selectSprite = new FlxSprite(0,0);
         add(selectSprite);
-        
         add(listSprite);
+
+        listCam = new FlxCamera(listBox.x, listBox.y, listBox.width, listBox.height);
+        listCam.bgColor = 0x00000000;
+        FlxG.cameras.add(listCam, false);
+        listSprite.cameras = [listCam];
+        selectSprite.cameras = [listCam];  
         
-        changeSelect(0);
-        
+        changeSelect(0);        
         super.create();
     }
     override function update(elapsed:Float) {
@@ -98,6 +104,8 @@ class ScriptEditorState extends MusicBeatState {
         selectSprite.alpha = 0.5;
         selectSprite.x = item.x;
         selectSprite.y = item.y;
+
+        listCam.scroll.y = curSelected * item.height;
     }
     
     function reload() {
