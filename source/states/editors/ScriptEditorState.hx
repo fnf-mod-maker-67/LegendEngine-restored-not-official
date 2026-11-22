@@ -15,10 +15,14 @@ class ScriptEditorState extends MusicBeatState {
     var fileList:Array<String>;
     var scriptList:Array<Script>;
 
+    var isTyping:Bool = false;
+    
     var curSelected:Int = 0;
     var bg:FlxSprite;
     var listBox:FlxSprite;
     var listSprite:FlxSpriteGroup;
+
+    var selectSprite:FlxSprite;
     
     override function create() {
         reload();
@@ -63,10 +67,39 @@ class ScriptEditorState extends MusicBeatState {
             listSprite.add(items);
             i++;
         }
+        selectSprite = new FlxSprite(0,0);
+        add(selectSprite);
+        
         add(listSprite);
+        
+        changeSelect(0);
+        
         super.create();
     }
+    override function update(elapsed:Float) {
+        if (!isTyping) {
+            selectSprite.visible = true;
+            if (controls.UI_DOWN_P) changeSelect(1);
+            if (controls.UI_UP_P) changeSelect(-1);
+            if (controls.BACK) MusicBeatState.switchState(new MasterEditorMenu());
+        }
+        super.update(elapsed);
+    }
 
+    function changeSelect(howmuch:Int) {
+        curSelected += howmuch;
+        if (scriptList.length <= curSelected) curSelected = 0;
+        if (curSelected < 0) curSelected = scriptList.length - 1;
+        
+        var item:FlxSpriteGroup = cast listSprite.members[curSelected];
+        var width:Int = Std.int(item.width);
+        var height:Int = Std.int(item.height);
+        selectSprite.makeGraphic(width, height, FlxColor.WHITE);
+        selectSprite.alpha = 0.5;
+        selectSprite.x = item.x;
+        selectSprite.y = item.y;
+    }
+    
     function reload() {
         fileList = [];
         scriptList = [];
