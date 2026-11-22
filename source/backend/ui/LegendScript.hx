@@ -482,7 +482,7 @@ class LegendScript extends FlxSpriteGroup
 				var mousePosY:Float = FlxG.mouse.getScreenPosition(camera).y;
 
 				var lines:Int = Std.int(Math.max(1, textObj.textField.numLines));
-				var relY:Float = mousePosY - textObjY - 2;
+				var relY:Float = mousePosY - textObjY - GUTTER;
 				var ln:Int = 0;
 				while(ln < lines - 1 && getLineTop(ln + 1) <= relY) ln++;
 
@@ -492,7 +492,7 @@ class LegendScript extends FlxSpriteGroup
 				if(end > start && text.charAt(end - 1) == '\n') end--;
 
 				caretIndex = start;
-				var relX:Float = mousePosX - (textObjX - textObj.textField.scrollH);
+				var relX:Float = mousePosX - (textObjX + GUTTER - textObj.textField.scrollH);
 				for(c in start...end)
 				{
 					var prevW:Float = getXInLine(start, c);
@@ -562,10 +562,10 @@ class LegendScript extends FlxSpriteGroup
 		var lh:Float = getLineHeight();
 		if(caret != null && caret.exists)
 		{
-			caret.setGraphicSize(1, Math.max(2, lh - 4));
+			caret.setGraphicSize(1, Math.max(1, lh));
 			caret.updateHitbox();
-			caret.y = textObj.y + 4 + getLineTop(getVisualLine(caretIndex));
-			caret.x = textObj.x + 1 - textField.scrollH + getXInLine(getLineStart(caretIndex), caretIndex);
+			caret.y = textObj.y + GUTTER + getLineTop(getVisualLine(caretIndex));
+			caret.x = textObj.x + GUTTER - textField.scrollH + getXInLine(getLineStart(caretIndex), caretIndex);
 		}
 
 		if(selection != null && selection.exists)
@@ -577,8 +577,8 @@ class LegendScript extends FlxSpriteGroup
 				var ls:Int = getLineStart(caretIndex);
 				var x1:Float = getXInLine(ls, caretIndex);
 				var x2:Float = getXInLine(ls, selectIndex);
-				selection.x = textObj.x + 1 - textField.scrollH + Math.min(x1, x2);
-				selection.y = textObj.y + 2 + getLineTop(getVisualLine(caretIndex));
+				selection.x = textObj.x + GUTTER - textField.scrollH + Math.min(x1, x2);
+				selection.y = textObj.y + GUTTER + getLineTop(getVisualLine(caretIndex));
 				selection.scale.y = lh;
 				selection.scale.x = Math.abs(x1 - x2);
 				selection.updateHitbox();
@@ -639,7 +639,7 @@ class LegendScript extends FlxSpriteGroup
 		{
 			textObj.scale.x = 1;
 			textObj.scale.y = 1;
-			if(caret != null && caret.exists) caret.setGraphicSize(1, Math.max(2, getLineHeight() - 4));
+			if(caret != null && caret.exists) caret.setGraphicSize(1, Math.max(1, getLineHeight()));
 		}
 	}
 	
@@ -681,6 +681,8 @@ class LegendScript extends FlxSpriteGroup
 		return passwordMask;
 	}
 
+	// openfl TextField는 사방에 2px 내부 여백(거터)을 두고 글자를 그린다
+	static inline var GUTTER:Float = 2;
 	// 입력칸 세로 최대 크기(0 이하면 글자 높이만큼 제한 없이 늘어남)
 	public var maxHeight(default, set):Float = 0;
 	function set_maxHeight(v:Float):Float
@@ -706,7 +708,7 @@ class LegendScript extends FlxSpriteGroup
 		}
 		if(textObj.text != shown) textObj.text = shown;
 		text = v;
-		var wantH:Float = textObj.textField.textHeight + 6;
+		var wantH:Float = textObj.textField.textHeight + GUTTER * 2 + 2;
 		if(maxHeight > 0 && wantH > maxHeight) wantH = maxHeight;
 		if(Math.abs(_appliedH - wantH) > 0.5)
 		{
