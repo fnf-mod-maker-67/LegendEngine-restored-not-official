@@ -34,7 +34,7 @@ enum abstract CaseMode(Int) from Int from UInt to Int to UInt
 
 class LegendScript extends FlxSpriteGroup
 {
-	public static final CHANGE_EVENT = "inputtext_change";
+	public static final CHANGE_EVENT = "script_change";
 
 	static final KEY_TILDE = 126;
 	static final KEY_ACUTE = 180;
@@ -587,8 +587,8 @@ class LegendScript extends FlxSpriteGroup
 	{
 		textObj.fieldWidth = Math.max(1, v - 2);
 		textObj.textField.selectable = false;
-		textObj.textField.wordWrap = false;
-		textObj.textField.multiline = false;
+		textObj.textField.wordWrap = true;
+		textObj.textField.multiline = true;
 		return (fieldWidth = v);
 	}
 
