@@ -125,7 +125,7 @@ class ScriptEditorState extends MusicBeatState {
     }
 
     function save(name:String) {
-        FileSystem.saveContent(Paths.modFolders(scriptList[curSelected].path), scriptList[curSelected].detail);
+        File.saveContent(Paths.modFolders(scriptList[curSelected].path), scriptList[curSelected].detail);
     }
     
     function reload() {
