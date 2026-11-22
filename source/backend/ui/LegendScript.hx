@@ -4,6 +4,7 @@ import flixel.FlxObject;
 import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxDestroyUtil;
 import flash.events.KeyboardEvent;
+import openfl.events.TextEvent;
 import lime.system.Clipboard;
 import backend.ui.LegendUIInputText.AccentCode;
 import backend.ui.LegendUIInputText.FilterMode;
@@ -63,6 +64,7 @@ class LegendScript extends FlxSpriteGroup
 		this.text = text;
 
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		FlxG.stage.addEventListener(TextEvent.TEXT_INPUT, onTextInput);
 	}
 	
 	public var selectIndex:Int = -1;
@@ -91,6 +93,16 @@ class LegendScript extends FlxSpriteGroup
 		{
 			switch(flxKey)
 			{
+				case Z: //undo / redo(Shift)
+					if(e.shiftKey) redo(); else undo();
+					updateCaret();
+					return;
+
+				case Y: //redo
+					redo();
+					updateCaret();
+					return;
+
 				case A: //select all text
 					selectIndex = Std.int(Math.min(0, text.length - 1));
 					caretIndex = text.length;
@@ -214,7 +226,7 @@ class LegendScript extends FlxSpriteGroup
 				lastAccent = NONE;
 		}
 
-		//trace(keyCode, charCode, flxKey);
+		_keepWantX = false;
 		switch(flxKey)
 		{
 			case LEFT: //move caret to left
@@ -240,26 +252,14 @@ class LegendScript extends FlxSpriteGroup
 			case UP:
 				if(!FlxG.keys.pressed.SHIFT) selectIndex = -1;
 				else if(selectIndex == -1) selectIndex = caretIndex;
-				var curStart:Int = getLineStart(caretIndex);
-				if(curStart > 0)
-				{
-					var col:Int = caretIndex - curStart;
-					var prevEnd:Int = curStart - 1;
-					var prevStart:Int = getLineStart(prevEnd);
-					caretIndex = prevStart + Std.int(Math.min(col, prevEnd - prevStart));
-				}
+				caretIndex = moveVisualLine(-1);
+				_keepWantX = true;
 
 			case DOWN:
 				if(!FlxG.keys.pressed.SHIFT) selectIndex = -1;
 				else if(selectIndex == -1) selectIndex = caretIndex;
-				var nl:Int = text.indexOf('\n', caretIndex);
-				if(nl != -1)
-				{
-					var col2:Int = caretIndex - getLineStart(caretIndex);
-					var nextStart:Int = nl + 1;
-					var nextEnd:Int = getLineEnd(nextStart);
-					caretIndex = nextStart + Std.int(Math.min(col2, nextEnd - nextStart));
-				}
+				caretIndex = moveVisualLine(1);
+				_keepWantX = true;
 
 			case INSERT: //change to insert mode
 				inInsertMode = !inInsertMode;
@@ -373,6 +373,7 @@ class LegendScript extends FlxSpriteGroup
 				_typeLetter(charCode);
 				_nextAccent = NONE;
 		}
+		if(!_keepWantX) _wantX = -1;
 		updateCaret();
 	}
 
@@ -444,6 +445,142 @@ class LegendScript extends FlxSpriteGroup
 		return (a != null && b != null) ? b.x + b.width - a.x : 0;
 	}
 
+
+	// ---- 화면 줄 이동: 같은 가로 위치(_wantX)에 가장 가까운 글자로 ----
+	var _wantX:Float = -1;
+	var _keepWantX:Bool = false;
+
+	// 줄 시작 글자 기준 idx 앞까지의 폭 (줄 맨 앞 = 0)
+	function xOfIndex(idx:Int):Float
+	{
+		var tf = textObj.textField;
+		var ln:Int = getVisualLine(idx);
+		var start:Int = tf.getLineOffset(ln);
+		return getXInLine(start, idx);
+	}
+
+	function moveVisualLine(dir:Int):Int
+	{
+		var tf = textObj.textField;
+		if(text.length == 0) return 0;
+		var cur:Int = getVisualLine(caretIndex);
+		var target:Int = cur + dir;
+		if(target < 0) return 0;
+		if(target > tf.numLines - 1) return text.length;
+
+		if(_wantX < 0) _wantX = xOfIndex(caretIndex);
+
+		var start:Int = tf.getLineOffset(target);
+		var len:Int = tf.getLineLength(target);
+		var end:Int = start + len;
+		// 줄 끝의 개행/표시용 공백은 커서가 올라설 수 없다
+		while(end > start && (text.charAt(end - 1) == '\n' || end > text.length)) end--;
+
+		var best:Int = start;
+		var prevW:Float = 0;
+		for(c in start...end)
+		{
+			var w:Float = getXInLine(start, c + 1);
+			// 글자 폭의 중간점보다 왼쪽이면 그 글자 앞, 아니면 뒤
+			if(_wantX >= prevW + (w - prevW) / 2) best = c + 1;
+			else break;
+			prevW = w;
+		}
+		return best;
+	}
+
+	// ---- IME(한글 등) 입력: 조합이 끝난 문자열이 TEXT_INPUT으로 온다 ----
+	var _handledByKey:Bool = false;
+
+	function onTextInput(e:TextEvent)
+	{
+		if(focusOn != this) return;
+		// KEY_DOWN에서 이미 넣은 영문/숫자/기호는 건너뛴다
+		if(_handledByKey) { _handledByKey = false; return; }
+		var t:String = e.text;
+		if(t == null || t.length == 0) return;
+		// 제어 문자 제외(개행은 Enter 경로로 처리)
+		var cleaned:String = '';
+		for(k in 0...t.length)
+		{
+			var cc:Int = t.charCodeAt(k);
+			if(cc >= 32 && cc != 127) cleaned += t.charAt(k);
+		}
+		if(cleaned.length == 0) return;
+		_typeString(cleaned);
+		updateCaret();
+	}
+
+	function _typeString(str:String)
+	{
+		if(selectIndex > -1 && selectIndex != caretIndex)
+			deleteSelection();
+		str = filter(str);
+		if(str.length == 0) return;
+		if(maxLength != 0 && (text.length + str.length) > maxLength) return;
+
+		var lastText = text;
+		_mergeNext = true;
+		if(!inInsertMode)
+			text = text.substring(0, caretIndex) + str + text.substring(caretIndex);
+		else
+			text = text.substring(0, caretIndex) + str + text.substring(caretIndex + str.length);
+		_mergeNext = false;
+		caretIndex += str.length;
+		if(onChange != null) onChange(lastText, text);
+		if(broadcastInputTextEvent) LegendUIEventHandler.event(CHANGE_EVENT, this);
+		_caretTime = 0;
+	}
+
+	// ---- undo / redo: 편집 직전의 (text, caretIndex) 스냅샷 스택 ----
+	static inline var UNDO_LIMIT:Int = 200;
+	var _undo:Array<{t:String, c:Int}> = [];
+	var _redo:Array<{t:String, c:Int}> = [];
+	var _restoring:Bool = false;
+	var _mergeNext:Bool = false; // 연속 타이핑이면 같은 덩어리로 묶는다
+	var _lastMerged:Bool = false;
+
+	// text가 바뀌기 직전에 호출: 이전 상태 저장
+	function _recordUndo(prev:String)
+	{
+		if(_restoring) return;
+		// 같은 덩어리 연속 타이핑이면 새 스냅샷을 만들지 않는다
+		if(_mergeNext && _lastMerged && _undo.length > 0) { _redo = []; return; }
+		_undo.push({t:prev, c:caretIndex});
+		if(_undo.length > UNDO_LIMIT) _undo.shift();
+		_redo = [];
+		_lastMerged = _mergeNext;
+	}
+
+	public function undo()
+	{
+		if(_undo.length == 0) return;
+		var st = _undo.pop();
+		_redo.push({t:text, c:caretIndex});
+		_applySnapshot(st);
+	}
+
+	public function redo()
+	{
+		if(_redo.length == 0) return;
+		var st = _redo.pop();
+		_undo.push({t:text, c:caretIndex});
+		_applySnapshot(st);
+	}
+
+	function _applySnapshot(st:{t:String, c:Int})
+	{
+		var lastText = text;
+		_restoring = true;
+		text = st.t;
+		_restoring = false;
+		selectIndex = -1;
+		caretIndex = Std.int(Math.max(0, Math.min(text.length, st.c)));
+		_lastMerged = false;
+		if(onChange != null) onChange(lastText, text);
+		if(broadcastInputTextEvent) LegendUIEventHandler.event(CHANGE_EVENT, this);
+	}
+
 	public dynamic function onPressEnter(e:KeyboardEvent) {
 		if(selectIndex > -1 && selectIndex != caretIndex)
 			deleteSelection();
@@ -466,6 +603,8 @@ class LegendScript extends FlxSpriteGroup
 
 	override function update(elapsed:Float)
 	{
+		// KEY_DOWN과 TEXT_INPUT은 같은 프레임 안에서 연달아 오므로 프레임이 지나면 중복 방지 플래그를 푼다
+		_handledByKey = false;
 		super.update(elapsed);
 
 		if(FlxG.mouse.justPressed)
@@ -620,6 +759,7 @@ class LegendScript extends FlxSpriteGroup
 	{
 		if(focusOn == this) focusOn = null;
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		FlxG.stage.removeEventListener(TextEvent.TEXT_INPUT, onTextInput);
 		super.destroy();
 	}
 
@@ -695,6 +835,7 @@ class LegendScript extends FlxSpriteGroup
 	var _appliedH:Float = 0;
 	function set_text(v:String)
 	{
+		if(text != null && v != text) _recordUndo(text);
 		v = filter(v);
 
 		var shown:String = '';
@@ -752,12 +893,14 @@ class LegendScript extends FlxSpriteGroup
 		if(letter.length > 0 && (maxLength == 0 || (text.length + letter.length) <= maxLength))
 		{
 			var lastText = text;
-			//trace('Drawing character: $letter');
+			_handledByKey = true;
+			_mergeNext = letter != '\n';
 			if(!inInsertMode)
 				text = text.substring(0, caretIndex) + letter + text.substring(caretIndex);
 			else
 				text = text.substring(0, caretIndex) + letter + text.substring(caretIndex+1);
 
+			_mergeNext = false;
 			caretIndex += letter.length;
 			if(onChange != null) onChange(lastText, text);
 			if(broadcastInputTextEvent) LegendUIEventHandler.event(CHANGE_EVENT, this);
