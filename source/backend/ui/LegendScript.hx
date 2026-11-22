@@ -389,6 +389,7 @@ class LegendScript extends FlxSpriteGroup
 		return e == -1 ? text.length : e;
 	}
 
+	// 논리 줄(\n 기준) 번호
 	function getLineNumber(idx:Int):Int
 	{
 		var n:Int = 0;
@@ -396,8 +397,25 @@ class LegendScript extends FlxSpriteGroup
 		return n;
 	}
 
+	// 화면 줄(자동 줄바꿈 포함) 번호
+	function getVisualLine(idx:Int):Int
+	{
+		if(text.length == 0) return 0;
+		var tf = textObj.textField;
+		var i:Int = Std.int(Math.max(0, Math.min(text.length - 1, idx)));
+		var ln:Int = tf.getLineIndexOfChar(i);
+		if(ln < 0) ln = getLineNumber(idx);
+		// 맨 끝이 개행 뒤라면 한 줄 더 내려간다
+		if(idx >= text.length && text.charAt(text.length - 1) == '\n') ln++;
+		return ln;
+	}
+
 	function getLineHeight():Float
-		return textObj.textField.textHeight / Math.max(1, getLineNumber(text.length) + 1);
+	{
+		var tf = textObj.textField;
+		var lines:Int = Std.int(Math.max(1, tf.numLines));
+		return tf.textHeight / lines;
+	}
 
 	// lineStart 줄에서 idx 글자 앞까지의 가로 폭
 	function getXInLine(lineStart:Int, idx:Int):Float
@@ -446,13 +464,14 @@ class LegendScript extends FlxSpriteGroup
 				var mousePosX:Float = FlxG.mouse.getScreenPosition(camera).x;
 				var mousePosY:Float = FlxG.mouse.getScreenPosition(camera).y;
 
-				var lines:Int = getLineNumber(text.length) + 1;
+				var lines:Int = Std.int(Math.max(1, textObj.textField.numLines));
 				var lh:Float = getLineHeight();
 				var ln:Int = Std.int(Math.max(0, Math.min(lines - 1, (mousePosY - textObjY) / lh)));
 
-				var start:Int = 0;
-				for(k in 0...ln) start = text.indexOf('\n', start) + 1;
-				var end:Int = getLineEnd(start);
+				var tfc = textObj.textField;
+				var start:Int = text.length == 0 ? 0 : tfc.getLineOffset(ln);
+				var end:Int = text.length == 0 ? 0 : start + tfc.getLineLength(ln);
+				if(end > start && text.charAt(end - 1) == '\n') end--;
 
 				caretIndex = start;
 				var relX:Float = mousePosX - (textObjX - textObj.textField.scrollH);
@@ -525,7 +544,7 @@ class LegendScript extends FlxSpriteGroup
 		var lh:Float = getLineHeight();
 		if(caret != null && caret.exists)
 		{
-			caret.y = textObj.y + 2 + getLineNumber(caretIndex) * lh;
+			caret.y = textObj.y + 2 + getVisualLine(caretIndex) * lh;
 			caret.x = textObj.x + 1 - textField.scrollH + getXInLine(getLineStart(caretIndex), caretIndex);
 		}
 
@@ -539,7 +558,7 @@ class LegendScript extends FlxSpriteGroup
 				var x1:Float = getXInLine(ls, caretIndex);
 				var x2:Float = getXInLine(ls, selectIndex);
 				selection.x = textObj.x + 1 - textField.scrollH + Math.min(x1, x2);
-				selection.y = textObj.y + 2 + getLineNumber(caretIndex) * lh;
+				selection.y = textObj.y + 2 + getVisualLine(caretIndex) * lh;
 				selection.scale.y = lh;
 				selection.scale.x = Math.abs(x1 - x2);
 				selection.updateHitbox();
@@ -642,6 +661,7 @@ class LegendScript extends FlxSpriteGroup
 		return passwordMask;
 	}
 
+	var _appliedH:Float = 0;
 	function set_text(v:String)
 	{
 		v = filter(v);
@@ -657,9 +677,10 @@ class LegendScript extends FlxSpriteGroup
 		}
 		if(textObj.text != shown) textObj.text = shown;
 		text = v;
-		var wantH:Float = textObj.height + 2;
-		if(Math.abs(bg.height - wantH) > 0.5)
+		var wantH:Float = textObj.textField.textHeight + 6;
+		if(Math.abs(_appliedH - wantH) > 0.5)
 		{
+			_appliedH = wantH;
 			setGraphicSize(fieldWidth + 2, wantH);
 			updateHitbox();
 		}
