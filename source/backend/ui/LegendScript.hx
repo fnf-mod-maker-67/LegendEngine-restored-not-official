@@ -410,11 +410,28 @@ class LegendScript extends FlxSpriteGroup
 		return ln;
 	}
 
+	// 화면 줄 n의 위쪽 y(글자 영역 기준)
+	function getLineTop(n:Int):Float
+	{
+		var tf = textObj.textField;
+		var y:Float = 0;
+		var last:Int = Std.int(Math.max(0, tf.numLines - 1));
+		var upto:Int = Std.int(Math.min(n, tf.numLines));
+		for(i in 0...upto)
+		{
+			var m = tf.getLineMetrics(Std.int(Math.min(i, last)));
+			y += m.height;
+		}
+		return y;
+	}
+
+	// 현재 커서가 있는 줄의 실제 높이
 	function getLineHeight():Float
 	{
 		var tf = textObj.textField;
-		var lines:Int = Std.int(Math.max(1, tf.numLines));
-		return tf.textHeight / lines;
+		var n:Int = Std.int(Math.max(0, Math.min(tf.numLines - 1, getVisualLine(caretIndex))));
+		var m = tf.getLineMetrics(n);
+		return m.height > 0 ? m.height : tf.textHeight / Math.max(1, tf.numLines);
 	}
 
 	// lineStart 줄에서 idx 글자 앞까지의 가로 폭
@@ -465,8 +482,9 @@ class LegendScript extends FlxSpriteGroup
 				var mousePosY:Float = FlxG.mouse.getScreenPosition(camera).y;
 
 				var lines:Int = Std.int(Math.max(1, textObj.textField.numLines));
-				var lh:Float = getLineHeight();
-				var ln:Int = Std.int(Math.max(0, Math.min(lines - 1, (mousePosY - textObjY) / lh)));
+				var relY:Float = mousePosY - textObjY - 2;
+				var ln:Int = 0;
+				while(ln < lines - 1 && getLineTop(ln + 1) <= relY) ln++;
 
 				var tfc = textObj.textField;
 				var start:Int = text.length == 0 ? 0 : tfc.getLineOffset(ln);
@@ -544,7 +562,9 @@ class LegendScript extends FlxSpriteGroup
 		var lh:Float = getLineHeight();
 		if(caret != null && caret.exists)
 		{
-			caret.y = textObj.y + 2 + getVisualLine(caretIndex) * lh;
+			caret.setGraphicSize(1, Math.max(2, lh - 4));
+			caret.updateHitbox();
+			caret.y = textObj.y + 4 + getLineTop(getVisualLine(caretIndex));
 			caret.x = textObj.x + 1 - textField.scrollH + getXInLine(getLineStart(caretIndex), caretIndex);
 		}
 
@@ -558,7 +578,7 @@ class LegendScript extends FlxSpriteGroup
 				var x1:Float = getXInLine(ls, caretIndex);
 				var x2:Float = getXInLine(ls, selectIndex);
 				selection.x = textObj.x + 1 - textField.scrollH + Math.min(x1, x2);
-				selection.y = textObj.y + 2 + getVisualLine(caretIndex) * lh;
+				selection.y = textObj.y + 2 + getLineTop(getVisualLine(caretIndex));
 				selection.scale.y = lh;
 				selection.scale.x = Math.abs(x1 - x2);
 				selection.updateHitbox();
