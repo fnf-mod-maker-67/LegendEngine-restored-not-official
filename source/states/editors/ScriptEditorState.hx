@@ -73,7 +73,7 @@ class ScriptEditorState extends MusicBeatState {
         add(selectSprite);
         add(listSprite);
 
-        listCam = new FlxCamera(listBox.x, listBox.y, listBox.width, listBox.height);
+        listCam = new FlxCamera(listBox.x, listBox.y, Std.int(listBox.width), Std.int(listBox.height));
         listCam.bgColor = 0x00000000;
         FlxG.cameras.add(listCam, false);
         listSprite.cameras = [listCam];
