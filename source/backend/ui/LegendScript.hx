@@ -619,7 +619,7 @@ class LegendScript extends FlxSpriteGroup
 		{
 			textObj.scale.x = 1;
 			textObj.scale.y = 1;
-			if(caret != null && caret.exists) caret.setGraphicSize(1, textObj.height - 4);
+			if(caret != null && caret.exists) caret.setGraphicSize(1, Math.max(2, getLineHeight() - 4));
 		}
 	}
 	
@@ -661,6 +661,15 @@ class LegendScript extends FlxSpriteGroup
 		return passwordMask;
 	}
 
+	// 입력칸 세로 최대 크기(0 이하면 글자 높이만큼 제한 없이 늘어남)
+	public var maxHeight(default, set):Float = 0;
+	function set_maxHeight(v:Float):Float
+	{
+		maxHeight = v;
+		_appliedH = 0;
+		if(textObj != null && text != null) text = text;
+		return v;
+	}
 	var _appliedH:Float = 0;
 	function set_text(v:String)
 	{
@@ -678,6 +687,7 @@ class LegendScript extends FlxSpriteGroup
 		if(textObj.text != shown) textObj.text = shown;
 		text = v;
 		var wantH:Float = textObj.textField.textHeight + 6;
+		if(maxHeight > 0 && wantH > maxHeight) wantH = maxHeight;
 		if(Math.abs(_appliedH - wantH) > 0.5)
 		{
 			_appliedH = wantH;
