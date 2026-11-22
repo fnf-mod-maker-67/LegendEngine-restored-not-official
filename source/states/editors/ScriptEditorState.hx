@@ -29,6 +29,8 @@ class ScriptEditorState extends MusicBeatState {
     override function create() {
         super.create();
         reload();
+
+        cropOverlay = false;
         
         bg = new FlxSprite(0, 0);
         bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.GRAY);
