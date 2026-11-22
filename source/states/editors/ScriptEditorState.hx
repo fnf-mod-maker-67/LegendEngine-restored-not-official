@@ -27,6 +27,7 @@ class ScriptEditorState extends MusicBeatState {
     var listCam:FlxCamera;
     
     override function create() {
+        super.create();
         reload();
         
         bg = new FlxSprite(0, 0);
@@ -64,7 +65,6 @@ class ScriptEditorState extends MusicBeatState {
             items.add(icon);
             items.add(luaHx);
             items.add(txt);
-            items.x = listBox.x;
             items.y = i * (icon.height + 10);
             listSprite.add(items);
             i++;
@@ -80,7 +80,6 @@ class ScriptEditorState extends MusicBeatState {
         selectSprite.cameras = [listCam];  
         
         changeSelect(0);        
-        super.create();
     }
     override function update(elapsed:Float) {
         if (!isTyping) {
@@ -105,7 +104,7 @@ class ScriptEditorState extends MusicBeatState {
         selectSprite.x = item.x;
         selectSprite.y = item.y;
 
-        listCam.scroll.y = curSelected * item.height;
+        listCam.scroll.y = curSelected * item.height + 10;
     }
     
     function reload() {
