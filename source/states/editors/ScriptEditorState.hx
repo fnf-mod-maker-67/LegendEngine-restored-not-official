@@ -42,13 +42,14 @@ class ScriptEditorState extends MusicBeatState {
             if (Paths.fileExists("scriptEditor/icon/"+rawItem.name, IMAGE))
                 icon.loadGraphic(iconPath);
             
-            var luaHx:FlxSprite = new FlxSprite(0,icon.y + icon.height);
+            var luaHx:FlxSprite = new FlxSprite(0,0);
             if (rawItem.isLua == "lua") 
                 luaHx.loadGraphic(Paths.image('scriptEditor/lua'));
             else if (rawItem.isLua == "hx")
                 luaHx.loadGraphic(Paths.image('scriptEditor/hx'));
             else
                 luaHx.loadGraphic(Paths.image('scriptEditor/other'));
+            luaHx.y = icon.y + icon.height - luaHx.height;
             
             var txt:FlxText = new FlxText(icon.x + icon.width + 10, 0, 380, rawItem.name, 36);
             txt.setFormat(Paths.font("vcr.ttf"), 36, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -57,6 +58,7 @@ class ScriptEditorState extends MusicBeatState {
             items.add(icon);
             items.add(luaHx);
             items.add(txt);
+            items.x = listBox.x;
             items.y = listBox.y + i * (icon.height + 10);
             listSprite.add(items);
             i++;
