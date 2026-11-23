@@ -23,6 +23,8 @@ class LegendScript extends FlxSpriteGroup
 	public var bg:FlxSprite;
 	public var behindText:FlxSprite;
 	public var selection:FlxSprite;
+	// 여러 줄 선택용 하이라이트 풀 (selection이 첫 번째, 부족하면 복제해서 늘림)
+	var _selPool:Array<FlxSprite> = [];
 	public var textObj:FlxText;
 	public var caret:FlxSprite;
 	public var onChange:String->String->Void;
@@ -656,11 +658,8 @@ class LegendScript extends FlxSpriteGroup
 				if(selection != null && selection.exists)
 				{
 					if(selectIndex != -1 && selectIndex != caretIndex)
-					{
-						selection.visible = true;
 						drewSelection = true;
-					}
-					else selection.visible = false;
+					else for(sp in _selPool) sp.visible = false;
 				}
 	
 				if(caret != null && caret.exists)
@@ -678,6 +677,7 @@ class LegendScript extends FlxSpriteGroup
 		{
 			_caretTime = 0;
 			inInsertMode = false;
+			for(sp in _selPool) sp.visible = false;
 			if(selection != null && selection.exists) selection.visible = false;
 			if(caret != null && caret.exists) caret.visible = false;
 		}
@@ -688,6 +688,57 @@ class LegendScript extends FlxSpriteGroup
 		selectIndex = -1;
 		caretIndex = 0;
 		updateCaret();
+	}
+
+	// 선택 구간을 화면 줄 단위로 나눠 줄마다 회색 사각형을 그린다
+	function _drawSelection()
+	{
+		var tf = textObj.textField;
+		var used:Int = 0;
+		var hasSel:Bool = selectIndex > -1 && selectIndex != caretIndex && text.length > 0;
+		if(hasSel)
+		{
+			var a:Int = Std.int(Math.min(selectIndex, caretIndex));
+			var b:Int = Std.int(Math.max(selectIndex, caretIndex));
+			var firstLn:Int = getVisualLine(a);
+			var lastLn:Int = getVisualLine(b);
+			for(ln in firstLn...lastLn + 1)
+			{
+				var ls:Int = tf.getLineOffset(ln);
+				var le:Int = ls + tf.getLineLength(ln);
+				var from:Int = Std.int(Math.max(a, ls));
+				var to:Int = Std.int(Math.min(b, le));
+				if(to < from) continue;
+
+				var x1:Float = getXInLine(ls, from);
+				// 선택이 이 줄 끝을 넘어 다음 줄로 이어지면 줄 오른쪽 끝까지 칠한다
+				var x2:Float = (b > le - 1 && ln < lastLn) ? Math.max(getXInLine(ls, le), x1 + 4) : getXInLine(ls, to);
+				if(x2 <= x1) continue;
+
+				var spr:FlxSprite = _selSprite(used++);
+				spr.visible = true;
+				spr.x = textObj.x + GUTTER - tf.scrollH + x1;
+				spr.y = textObj.y + GUTTER + getLineTop(ln);
+				spr.setGraphicSize(Std.int(Math.ceil(x2 - x1)), Std.int(Math.ceil(tf.getLineMetrics(Std.int(Math.min(ln, tf.numLines - 1))).height)));
+				spr.updateHitbox();
+			}
+		}
+		// 쓰지 않는 풀 스프라이트는 숨긴다
+		for(k in used..._selPool.length) _selPool[k].visible = false;
+		if(used == 0) selection.visible = false;
+	}
+
+	function _selSprite(i:Int):FlxSprite
+	{
+		if(_selPool.length == 0) _selPool.push(selection);
+		while(_selPool.length <= i)
+		{
+			var c:FlxSprite = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
+			c.color = selection.color;
+			insert(members.indexOf(selection), c);
+			_selPool.push(c);
+		}
+		return _selPool[i];
 	}
 
 	public function updateCaret()
@@ -709,24 +760,7 @@ class LegendScript extends FlxSpriteGroup
 
 		if(selection != null && selection.exists)
 		{
-			// 같은 줄 안의 선택만 하이라이트 (여러 줄에 걸치면 글자 색 포맷만 적용)
-			var sameLine:Bool = selectIndex > -1 && selectIndex != caretIndex && getLineNumber(selectIndex) == getLineNumber(caretIndex);
-			if(sameLine)
-			{
-				var ls:Int = getLineStart(caretIndex);
-				var x1:Float = getXInLine(ls, caretIndex);
-				var x2:Float = getXInLine(ls, selectIndex);
-				selection.x = textObj.x + GUTTER - textField.scrollH + Math.min(x1, x2);
-				selection.y = textObj.y + GUTTER + getLineTop(getVisualLine(caretIndex));
-				selection.scale.y = lh;
-				selection.scale.x = Math.abs(x1 - x2);
-				selection.updateHitbox();
-			}
-			else
-			{
-				selection.scale.x = 0;
-				selection.updateHitbox();
-			}
+			_drawSelection();
 
 			if(text.length > 0)
 			{
